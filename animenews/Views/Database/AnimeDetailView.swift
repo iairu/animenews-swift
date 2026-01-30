@@ -19,7 +19,7 @@ struct AnimeDetailView: View {
             .padding()
         }
         .navigationTitle(anime.title)
-        .navigationBarTitleDisplayMode(.inline)
+        //.navigationBarTitleDisplayMode(.inline) // unavailable on macOS
     }
 
     private var header: some View {

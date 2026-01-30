@@ -15,3 +15,16 @@ work on the animenews.xcodeproj project to encompass all features, for now witho
 [@FEATURE_PLAN.md](file:///Users/iairu/Desktop/SWIFT/animenews/FEATURE_PLAN.md) [@RESEARCH.md](file:///Users/iairu/Desktop/SWIFT/animenews/RESEARCH.md) 
 
 (xcodeproj tool installed using gem install xcodeproj)
+
+## 3.1 Adjustments on initial Xcode build
+
+Before we move on to Beta version:
+
+- i hotfixed 2 small build issues pointed out by Xcode
+- include more menu options in sidebar (e.g. a dashboard, settings, about)
+- news are not openable into main view like anime titles are
+- anime title search field has odd look
+- add proper customizeable title bar
+- fix issue for all anime titles with unavailable poster source:
+
+NSLocalizedDescription=A server with the specified hostname could not be found., NSErrorFailingURLStringKey=https://cdn.myanimelist.net/images/anime/14/47350.jpg, NSErrorFailingURLKey=https://cdn.myanimelist.net/images/anime/14/47350.jpg,

@@ -62,7 +62,7 @@ struct SearchBar: View {
             TextField("Search for anime...", text: $text)
                 .padding(8)
                 .padding(.horizontal, 25)
-                .background(Color(.systemGray6))
+                .background(Color(.systemGray))
                 .cornerRadius(8)
                 .overlay(
                     HStack {
