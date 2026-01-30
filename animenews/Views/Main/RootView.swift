@@ -1,90 +1,76 @@
-//
-//  ContentView.swift
-//  animenews
-//
-//  Created by Ondrej Špánik on 30/01/2026.
-//
-
 import SwiftUI
-import CoreData
 
-struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
-        animation: .default)
-    private var items: FetchedResults<Item>
-
+struct RootView: View {
     var body: some View {
-        NavigationView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
-                    } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-            Text("Select an item")
-        }
+        #if os(iOS)
+        MainTabView()
+        #else
+        MainNavigationView()
+        #endif
     }
+}
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            offsets.map { items[$0] }.forEach(viewContext.delete)
-
-            do {
-                try viewContext.save()
-            } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
+/// The main TabView for iOS devices.
+struct MainTabView: View {
+    var body: some View {
+        TabView {
+            NewsListView()
+                .tabItem {
+                    Label("News", systemImage: "newspaper.fill")
+                }
+            
+            DatabaseView()
+                .tabItem {
+                    Label("Database", systemImage: "books.vertical.fill")
+                }
         }
     }
 }
 
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
+/// The main NavigationView for macOS, providing a sidebar-based layout.
+struct MainNavigationView: View {
+    var body: some View {
+        NavigationView {
+            List {
+                NavigationLink(destination: NewsListView()) {
+                    Label("News", systemImage: "newspaper.fill")
+                }
+                NavigationLink(destination: DatabaseView()) {
+                    Label("Database", systemImage: "books.vertical.fill")
+                }
+            }
+            .listStyle(SidebarListStyle())
+            .frame(minWidth: 200, idealWidth: 220, maxWidth: 240)
+            
+            Text("Select a category")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .foregroundColor(.secondary)
+            
+            Text("Select an item")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .foregroundColor(.secondary)
+        }
+    }
+}
 
-struct ContentView_Previews: PreviewProvider {
+/// A wrapper view for the anime database section to be used in navigation.
+struct DatabaseView: View {
+    var body: some View {
+        AnimeListView()
+    }
+}
+
+struct RootView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+        // Preview for iOS
+        RootView()
+            .preferredColorScheme(.dark)
+            .previewDisplayName("iOS Preview")
+
+        // Preview for macOS
+        RootView()
+            .previewLayout(.fixed(width: 1200, height: 800))
+            .environment(\.colorScheme, .light)
+            .previewDisplayName("macOS Preview")
     }
 }
