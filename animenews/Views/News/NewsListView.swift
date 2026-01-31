@@ -5,9 +5,39 @@ struct NewsListView: View {
 
     var body: some View {
         List(viewModel.newsItems) { item in
-            NewsRow(item: item)
+            NavigationLink(destination: NewsDetailView(item: item)) {
+                NewsRow(item: item)
+            }
         }
         .navigationTitle("Anime News")
+        .toolbar {
+            #if os(macOS)
+            ToolbarItem(placement: .navigation) {
+                Button(action: {
+                    // This action toggles the sidebar in a multi-column layout.
+                    NSApp.keyWindow?.firstResponder?.tryToPerform(#selector(NSSplitViewController.toggleSidebar(_:)), with: nil)
+                }) {
+                    Image(systemName: "sidebar.left")
+                }
+            }
+            #endif
+            
+            ToolbarItemGroup(placement: .primaryAction) {
+                Menu {
+                    Button("All Sources", action: {})
+                    Button("Anime News Network", action: {})
+                    Button("Crunchyroll", action: {})
+                } label: {
+                    Image(systemName: "line.3.horizontal.decrease.circle")
+                }
+                
+                Button(action: {
+                    // Placeholder for share action
+                }) {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+        }
         .onAppear {
             // This is useful if the data needs to be refreshed when the view appears.
             // The ViewModel already fetches on init, so this is for subsequent appearances.

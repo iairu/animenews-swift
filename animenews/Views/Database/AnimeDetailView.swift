@@ -19,7 +19,24 @@ struct AnimeDetailView: View {
             .padding()
         }
         .navigationTitle(anime.title)
-        //.navigationBarTitleDisplayMode(.inline) // unavailable on macOS
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button(action: {
+                    // Placeholder for favorite action
+                }) {
+                    Image(systemName: "heart")
+                }
+                
+                Button(action: {
+                    // Placeholder for share action
+                }) {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+        }
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
     }
 
     private var header: some View {

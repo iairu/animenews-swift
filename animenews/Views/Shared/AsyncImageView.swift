@@ -18,16 +18,23 @@ struct AsyncImageView: View {
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-            case .failure:
+            case .failure(let error):
                 ZStack {
                     Rectangle()
-                        .fill(Color.gray.opacity(0.2))
-                    Image(systemName: "photo.fill")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .padding()
-                        .foregroundColor(.secondary)
+                        .fill(Color.gray.opacity(0.3))
+                    
+                    VStack(spacing: 8) {
+                        Image(systemName: "wifi.slash")
+                            .font(.system(size: 40))
+                        Text("Image load failed")
+                            .font(.caption)
+                    }
+                    .foregroundColor(.secondary)
                 }
+                .onAppear {
+                    print("ERROR: Image loading failed for URL \(url?.absoluteString ?? "nil"): \(error.localizedDescription)")
+                }
+
             @unknown default:
                 EmptyView()
             }

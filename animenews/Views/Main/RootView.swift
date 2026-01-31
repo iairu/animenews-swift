@@ -14,15 +14,33 @@ struct RootView: View {
 struct MainTabView: View {
     var body: some View {
         TabView {
-            NewsListView()
-                .tabItem {
-                    Label("News", systemImage: "newspaper.fill")
-                }
+            NavigationView {
+                DashboardView()
+            }
+            .tabItem {
+                Label("Dashboard", systemImage: "chart.bar.xaxis")
+            }
             
-            DatabaseView()
-                .tabItem {
-                    Label("Database", systemImage: "books.vertical.fill")
-                }
+            NavigationView {
+                NewsListView()
+            }
+            .tabItem {
+                Label("News", systemImage: "newspaper.fill")
+            }
+            
+            NavigationView {
+                DatabaseView()
+            }
+            .tabItem {
+                Label("Database", systemImage: "books.vertical.fill")
+            }
+            
+            NavigationView {
+                SettingsView()
+            }
+            .tabItem {
+                Label("Settings", systemImage: "gear")
+            }
         }
     }
 }
@@ -32,21 +50,25 @@ struct MainNavigationView: View {
     var body: some View {
         NavigationView {
             List {
+                NavigationLink(destination: DashboardView()) {
+                    Label("Dashboard", systemImage: "chart.bar.xaxis")
+                }
                 NavigationLink(destination: NewsListView()) {
                     Label("News", systemImage: "newspaper.fill")
                 }
                 NavigationLink(destination: DatabaseView()) {
                     Label("Database", systemImage: "books.vertical.fill")
                 }
+                Spacer() // Pushes settings to the bottom
+                NavigationLink(destination: SettingsView()) {
+                    Label("Settings", systemImage: "gear")
+                }
             }
-            .listStyle(SidebarListStyle())
+            .listStyle(.sidebar)
             .frame(minWidth: 200, idealWidth: 220, maxWidth: 240)
             
+            // Initial Detail View
             Text("Select a category")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .foregroundColor(.secondary)
-            
-            Text("Select an item")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .foregroundColor(.secondary)
         }
