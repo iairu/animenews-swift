@@ -3,7 +3,7 @@ import SwiftUI
 struct NewsListView: View {
     @StateObject private var viewModel = NewsViewModel()
 
-    var body: some View {
+    private var listView: some View {
         List(viewModel.newsItems) { item in
             NavigationLink(destination: NewsDetailView(item: item)) {
                 NewsRow(item: item)
@@ -50,6 +50,19 @@ struct NewsListView: View {
                 ProgressView()
             }
         }
+    }
+
+    var body: some View {
+        #if os(macOS)
+        NavigationView {
+            listView
+            Text("Select an article to read.")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .foregroundColor(.secondary)
+        }
+        #else
+        listView
+        #endif
     }
 }
 

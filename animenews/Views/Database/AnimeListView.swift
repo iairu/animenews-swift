@@ -3,7 +3,7 @@ import SwiftUI
 struct AnimeListView: View {
     @StateObject private var viewModel = AnimeListViewModel()
 
-    var body: some View {
+    private var listView: some View {
         List(viewModel.animeList) { anime in
             NavigationLink(destination: AnimeDetailView(anime: anime)) {
                 AnimeRow(anime: anime)
@@ -28,6 +28,19 @@ struct AnimeListView: View {
                 ProgressView("Fetching Anime...")
             }
         }
+    }
+
+    var body: some View {
+        #if os(macOS)
+        NavigationView {
+            listView
+            Text("Select an anime to see details.")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .foregroundColor(.secondary)
+        }
+        #else
+        listView
+        #endif
     }
 }
 
