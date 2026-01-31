@@ -10,6 +10,18 @@ struct AnimeListView: View {
             }
         }
         .navigationTitle("Anime Database")
+        .toolbar {
+#if os(macOS)
+            ToolbarItem(placement: .navigation) {
+                Button(action: {
+                    // This action toggles the sidebar in a multi-column layout.
+                    NSApp.keyWindow?.firstResponder?.tryToPerform(#selector(NSSplitViewController.toggleSidebar(_:)), with: nil)
+                }) {
+                    Image(systemName: "sidebar.left")
+                }
+            }
+#endif
+        }
         .searchable(text: $viewModel.searchQuery, prompt: "Search for anime...")
         .overlay {
             if viewModel.isLoading && viewModel.animeList.isEmpty {

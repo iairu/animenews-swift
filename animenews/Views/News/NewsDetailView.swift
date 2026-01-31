@@ -7,7 +7,6 @@ struct NewsDetailView: View {
         if let url = URL(string: item.link) {
             WebView(url: url)
                 .navigationTitle(item.source)
-                .navigationBarTitleDisplayMode(.inline)
         } else {
             VStack {
                 Image(systemName: "xmark.octagon.fill")
