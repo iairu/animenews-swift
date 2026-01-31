@@ -29,7 +29,7 @@ struct MainTabView: View {
             }
             
             NavigationView {
-                DatabaseView()
+                AnimeListView()
             }
             .tabItem {
                 Label("Database", systemImage: "books.vertical.fill")
@@ -57,7 +57,7 @@ struct MainNavigationView: View {
                 NavigationLink(destination: NewsListView()) {
                     Label("News", systemImage: "newspaper.fill")
                 }
-                NavigationLink(destination: DatabaseView()) {
+                NavigationLink(destination: AnimeListView()) {
                     Label("Database", systemImage: "books.vertical.fill")
                 }
                 Spacer() // Pushes settings to the bottom
@@ -89,12 +89,6 @@ struct MainNavigationView: View {
     }
 }
 
-/// A wrapper view for the anime database section to be used in navigation.
-struct DatabaseView: View {
-    var body: some View {
-        AnimeListView()
-    }
-}
 
 struct RootView_Previews: PreviewProvider {
     static var previews: some View {

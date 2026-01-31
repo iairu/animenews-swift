@@ -46,6 +46,6 @@ perfect, navigation now works as it should, however in NewsListView, the followi
 
 # 4. Beta version
 
-We are now moving on to the Beta version. Continue implementing based on feature plan.
+We are now moving on to the Beta version. Continue implementing based on feature plan except AdMob.
 
 [@FEATURE_PLAN.md](file:///Users/iairu/Desktop/SWIFT/animenews/FEATURE_PLAN.md) [@RESEARCH.md](file:///Users/iairu/Desktop/SWIFT/animenews/RESEARCH.md)

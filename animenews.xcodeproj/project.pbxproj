@@ -9,21 +9,28 @@
 /* Begin PBXBuildFile section */
 		136C51D6F896586672BC076C /* AnimeListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 493BDC28A20B74739F05FA6E /* AnimeListViewModel.swift */; };
 		1C15F2E8980EBDE28D938B09 /* NewsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC4FFF89C1A808280795385E /* NewsListView.swift */; };
+		25893A0F649F497537BD178C /* NavigationItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF91427D3B6BBC4E2FD0D68B /* NavigationItem.swift */; };
 		2DB0804C5C5E193D8BCE2CC7 /* AnimeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BD5608907715B664D41670E /* AnimeListView.swift */; };
+		3B5607797162EF533E312D45 /* ActivityRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DF2E0853057A82C6DE3BC05 /* ActivityRing.swift */; };
+		3C7B0154C34671C736333391 /* Sidebar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0ADB8AAA5B05195358321C9 /* Sidebar.swift */; };
 		43C12302CA9A0029BC921BB7 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB9B66C30F1EC7001D267AE /* Constants.swift */; };
 		4A75D889FEDDA97848D43E7A /* animenewsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F3B448FA055FC375309693 /* animenewsApp.swift */; };
 		59E832C8782D86C6555FC6E1 /* NewsItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59B712FE3D311B6937C44C34 /* NewsItem.swift */; };
 		5A6CA70E78945D1DF146EE76 /* AnimeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28F3E37AB89DE3435EB4F365 /* AnimeDetailView.swift */; };
 		81A063CBB08F55CD6F95E6A3 /* JikanResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06266344788768C2FAB5FD63 /* JikanResponse.swift */; };
+		82D99CDC5807E72A5C44A28E /* ChartDataCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1CBC1440FC5AEEA2DB261E /* ChartDataCalculator.swift */; };
 		83D130FD748A2AC1484262F2 /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4737074D7795AF3CA14F577E /* WebView.swift */; };
 		9266A44C1D4C1F4FA7B87EAF /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F7968770E505E6A1B0C95CF /* RootView.swift */; };
 		92A5FC5912019B291B819DDA /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 728D6B1CE4A95E86258DD6C5 /* SettingsView.swift */; };
+		97286B247F9AE5799279252E /* GradientCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9AAA6FBC26D1DBFFE3CE69 /* GradientCard.swift */; };
 		9B0C6AD167857E676E6C3253 /* AsyncImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE7EFBC63EDA48F8111D27C /* AsyncImageView.swift */; };
 		B1968250A595207F0D720E85 /* JikanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBCB199359820BB86361DA73 /* JikanService.swift */; };
 		BFAD1DEB024C4D2CC63DD1C7 /* RSSParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E23A5ADA1B4CCB4EBBE95E6 /* RSSParser.swift */; };
+		C076A54A105EA83F5BEA9ECB /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1451A6ABB254AE21DA50BFB /* DashboardViewModel.swift */; };
 		C7806A7612A34B16A786A47B /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7E84A05A177FFF19EE3121E /* DashboardView.swift */; };
 		DA0F438D4499005AA9974AB2 /* Anime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CF107C5633BE0D295ACF21E /* Anime.swift */; };
 		DCCBD493A66CEF5DB862D378 /* NewsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22DDF74599B4989B7A79124B /* NewsViewModel.swift */; };
+		DDE4759859874A5B04A8BB39 /* TrendChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74DE88BEFD69EDC7E9D9C352 /* TrendChart.swift */; };
 		E1DB8F9B2F2D645D00822052 /* animenews.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = E1DB8F992F2D645D00822052 /* animenews.xcdatamodeld */; };
 		E1DB8F9F2F2D646000822052 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E1DB8F9E2F2D646000822052 /* Assets.xcassets */; };
 		E1DB8FA32F2D646000822052 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E1DB8FA22F2D646000822052 /* Preview Assets.xcassets */; };
@@ -35,23 +42,30 @@
 		0E23A5ADA1B4CCB4EBBE95E6 /* RSSParser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RSSParser.swift; path = Services/RSSParser.swift; sourceTree = "<group>"; };
 		22DDF74599B4989B7A79124B /* NewsViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NewsViewModel.swift; path = ViewModels/NewsViewModel.swift; sourceTree = "<group>"; };
 		28F3E37AB89DE3435EB4F365 /* AnimeDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnimeDetailView.swift; path = Views/Database/AnimeDetailView.swift; sourceTree = "<group>"; };
+		3A9AAA6FBC26D1DBFFE3CE69 /* GradientCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GradientCard.swift; path = Views/Components/GradientCard.swift; sourceTree = "<group>"; };
 		4737074D7795AF3CA14F577E /* WebView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WebView.swift; path = Views/Shared/WebView.swift; sourceTree = "<group>"; };
 		493BDC28A20B74739F05FA6E /* AnimeListViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnimeListViewModel.swift; path = ViewModels/AnimeListViewModel.swift; sourceTree = "<group>"; };
 		4BD5608907715B664D41670E /* AnimeListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnimeListView.swift; path = Views/Database/AnimeListView.swift; sourceTree = "<group>"; };
+		4DF2E0853057A82C6DE3BC05 /* ActivityRing.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ActivityRing.swift; path = Views/Dashboard/ActivityRing.swift; sourceTree = "<group>"; };
 		59B712FE3D311B6937C44C34 /* NewsItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NewsItem.swift; path = Models/NewsItem.swift; sourceTree = "<group>"; };
 		59F3B448FA055FC375309693 /* animenewsApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = animenewsApp.swift; path = App/animenewsApp.swift; sourceTree = "<group>"; };
+		6D1CBC1440FC5AEEA2DB261E /* ChartDataCalculator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChartDataCalculator.swift; path = Services/ChartDataCalculator.swift; sourceTree = "<group>"; };
 		6E8F880283454C5B59BE091E /* NewsDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NewsDetailView.swift; path = Views/News/NewsDetailView.swift; sourceTree = "<group>"; };
 		6F7968770E505E6A1B0C95CF /* RootView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RootView.swift; path = Views/Main/RootView.swift; sourceTree = "<group>"; };
 		728D6B1CE4A95E86258DD6C5 /* SettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SettingsView.swift; path = Views/Settings/SettingsView.swift; sourceTree = "<group>"; };
+		74DE88BEFD69EDC7E9D9C352 /* TrendChart.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TrendChart.swift; path = Views/Dashboard/TrendChart.swift; sourceTree = "<group>"; };
 		8FB9B66C30F1EC7001D267AE /* Constants.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Constants.swift; path = Utilities/Constants.swift; sourceTree = "<group>"; };
 		9CF107C5633BE0D295ACF21E /* Anime.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Anime.swift; path = Models/Anime.swift; sourceTree = "<group>"; };
 		BC4FFF89C1A808280795385E /* NewsListView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NewsListView.swift; path = Views/News/NewsListView.swift; sourceTree = "<group>"; };
+		C1451A6ABB254AE21DA50BFB /* DashboardViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DashboardViewModel.swift; path = ViewModels/DashboardViewModel.swift; sourceTree = "<group>"; };
 		CBCB199359820BB86361DA73 /* JikanService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = JikanService.swift; path = Services/JikanService.swift; sourceTree = "<group>"; };
 		CDE7EFBC63EDA48F8111D27C /* AsyncImageView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AsyncImageView.swift; path = Views/Shared/AsyncImageView.swift; sourceTree = "<group>"; };
+		D0ADB8AAA5B05195358321C9 /* Sidebar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Sidebar.swift; path = Views/Navigation/Sidebar.swift; sourceTree = "<group>"; };
 		E1DB8F922F2D645D00822052 /* animenews.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = animenews.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E1DB8F9E2F2D646000822052 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E1DB8FA02F2D646000822052 /* animenews.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = animenews.entitlements; sourceTree = "<group>"; };
 		E1DB8FA22F2D646000822052 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		EF91427D3B6BBC4E2FD0D68B /* NavigationItem.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NavigationItem.swift; path = Models/NavigationItem.swift; sourceTree = "<group>"; };
 		F7E84A05A177FFF19EE3121E /* DashboardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DashboardView.swift; path = Views/Dashboard/DashboardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -100,6 +114,14 @@
 			name = Database;
 			sourceTree = "<group>";
 		};
+		3D2C2E85D7B0CCF9D3D87BDB /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				3A9AAA6FBC26D1DBFFE3CE69 /* GradientCard.swift */,
+			);
+			name = Components;
+			sourceTree = "<group>";
+		};
 		5CF6B400ECD027CAB726CE12 /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -109,6 +131,8 @@
 				614C18593D9E48266E44EB1D /* Main */,
 				11BB0488809170A7C2A4E181 /* Settings */,
 				E7D02E2F115EA02F80324DFF /* Dashboard */,
+				84A7A18BF8D6AAA952F7F6A8 /* Navigation */,
+				3D2C2E85D7B0CCF9D3D87BDB /* Components */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -127,8 +151,17 @@
 				59B712FE3D311B6937C44C34 /* NewsItem.swift */,
 				9CF107C5633BE0D295ACF21E /* Anime.swift */,
 				06266344788768C2FAB5FD63 /* JikanResponse.swift */,
+				EF91427D3B6BBC4E2FD0D68B /* NavigationItem.swift */,
 			);
 			name = Models;
+			sourceTree = "<group>";
+		};
+		84A7A18BF8D6AAA952F7F6A8 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				D0ADB8AAA5B05195358321C9 /* Sidebar.swift */,
+			);
+			name = Navigation;
 			sourceTree = "<group>";
 		};
 		C527400FB88FE7D5158FC3DC /* ViewModels */ = {
@@ -136,6 +169,7 @@
 			children = (
 				22DDF74599B4989B7A79124B /* NewsViewModel.swift */,
 				493BDC28A20B74739F05FA6E /* AnimeListViewModel.swift */,
+				C1451A6ABB254AE21DA50BFB /* DashboardViewModel.swift */,
 			);
 			name = ViewModels;
 			sourceTree = "<group>";
@@ -194,6 +228,8 @@
 			isa = PBXGroup;
 			children = (
 				F7E84A05A177FFF19EE3121E /* DashboardView.swift */,
+				4DF2E0853057A82C6DE3BC05 /* ActivityRing.swift */,
+				74DE88BEFD69EDC7E9D9C352 /* TrendChart.swift */,
 			);
 			name = Dashboard;
 			sourceTree = "<group>";
@@ -211,6 +247,7 @@
 			children = (
 				0E23A5ADA1B4CCB4EBBE95E6 /* RSSParser.swift */,
 				CBCB199359820BB86361DA73 /* JikanService.swift */,
+				6D1CBC1440FC5AEEA2DB261E /* ChartDataCalculator.swift */,
 			);
 			name = Services;
 			sourceTree = "<group>";
@@ -304,6 +341,13 @@
 				C7806A7612A34B16A786A47B /* DashboardView.swift in Sources */,
 				83D130FD748A2AC1484262F2 /* WebView.swift in Sources */,
 				FE99DC2CE2826F7863F91137 /* NewsDetailView.swift in Sources */,
+				C076A54A105EA83F5BEA9ECB /* DashboardViewModel.swift in Sources */,
+				25893A0F649F497537BD178C /* NavigationItem.swift in Sources */,
+				3C7B0154C34671C736333391 /* Sidebar.swift in Sources */,
+				3B5607797162EF533E312D45 /* ActivityRing.swift in Sources */,
+				DDE4759859874A5B04A8BB39 /* TrendChart.swift in Sources */,
+				97286B247F9AE5799279252E /* GradientCard.swift in Sources */,
+				82D99CDC5807E72A5C44A28E /* ChartDataCalculator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

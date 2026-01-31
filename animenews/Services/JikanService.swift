@@ -1,8 +1,29 @@
 import Foundation
+import Combine
 
 // A placeholder service that mimics fetching data from the Jikan API.
 // In a real app, this would make network requests to the Jikan API.
 class JikanService {
+
+    private let baseURL = URL(string: Constants.JikanAPI.baseUrl)!
+    private let decoder = JSONDecoder()
+
+    init() {
+        // Jikan API uses snake_case for its keys
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+    }
+    
+    /// Fetches the top all-time anime from Jikan.
+    /// - Returns: A Combine publisher that emits a JikanResponse with an array of Anime, or an error.
+    func fetchTopAnime() -> AnyPublisher<JikanResponse<[Anime]>, Error> {
+        let request = URLRequest(url: baseURL.appendingPathComponent("top/anime"))
+        
+        return URLSession.shared.dataTaskPublisher(for: request)
+            .map(\.data)
+            .decode(type: JikanResponse<[Anime]>.self, decoder: decoder)
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
+    }
 
     /// Simulates fetching the top seasonal anime.
     func fetchSeasonalAnime(completion: @escaping (Result<[Anime], Error>) -> Void) {
