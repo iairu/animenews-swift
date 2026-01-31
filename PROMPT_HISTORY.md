@@ -88,3 +88,11 @@ Add a "Sort by" option to the "My Anime" view to allow users to sort their track
 Add a "Filter by" option to the "My Anime" view to allow users to filter their tracked shows by status or progress.
 
 Adjust DashboardView to use system colors and system dark/light/auto appearance.
+
+---
+
+From last session: I need to switch to system colors, so I'll ditch the hardcoded `Theme.swift` hex values. Directly modifying `DashboardView.swift` to use SwiftUI's semantic colors like `.primary`, `.secondary`, and `.accentColor` is the most straightforward, cross-platform solution. I'll also remove the `.preferredColorScheme(.dark)` from the preview to respect system settings. Time to modify `DashboardView.swift`.
+
+/Users/iairu/Desktop/SWIFT/animenews/animenews/Views/Database/MyAnimeListView.swift:59:26 Consecutive statements on a line must be separated by ';'
+/Users/iairu/Desktop/SWIFT/animenews/animenews/Views/Database/MyAnimeListView.swift:59:27 Expected initial value after '='
+/Users/iairu/Desktop/SWIFT/animenews/animenews/Views/Database/MyAnimeListView.swift:83:87 Cannot use optional chaining on non-optional value of type 'TrackedAnime.Status'

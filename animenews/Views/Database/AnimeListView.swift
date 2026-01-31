@@ -26,7 +26,7 @@ struct AnimeListView: View {
         .onChange(of: searchQuery) { newValue in
             Task {
                 // Manually debounce the search
-                // fixme: macOS 13 only: try? await Task.sleep(for: .milliseconds(500))
+                try? await Task.sleep(nanoseconds: 500_000_000)
                 await viewModel.searchAnime(query: newValue)
             }
         }

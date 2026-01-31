@@ -2,16 +2,35 @@ import SwiftUI
 
 struct MyAnimeListView: View {
     @StateObject private var viewModel = MyAnimeListViewModel()
+    @State private var searchQuery = ""
+    @State private var sortOption: SortOption = .title
+    @State private var showOnlyWithProgress = false
 
     var body: some View {
         VStack {
-            Picker("Status", selection: $viewModel.statusFilter) {
-                Text("All").tag(nil as TrackedAnime.Status?)
-                ForEach(TrackedAnime.Status.allCases, id: \.self) { status in
-                    Text(status.rawValue).tag(status as TrackedAnime.Status?)
+            VStack {
+                Picker("Status", selection: $viewModel.statusFilter) {
+                    Text("All").tag(nil as TrackedAnime.Status?)
+                    ForEach(TrackedAnime.Status.allCases, id: \.self) { status in
+                        Text(status.rawValue).tag(Optional(status))
+                    }
+                }
+                .pickerStyle(.segmented)
+
+                HStack {
+                    Picker("Sort by", selection: $sortOption) {
+                        ForEach(SortOption.allCases) { option in
+                            Text(option.rawValue).tag(option)
+                        }
+                    }
+                    .pickerStyle(.menu)
+
+                    Spacer()
+
+                    Toggle("Has Progress", isOn: $showOnlyWithProgress)
+                        .toggleStyle(.button)
                 }
             }
-            .pickerStyle(.segmented)
             .padding()
 
             if viewModel.isLoading {
@@ -22,7 +41,7 @@ struct MyAnimeListView: View {
                     .foregroundColor(.secondary)
                 Spacer()
             } else {
-                List(viewModel.trackedAnime) { anime in
+                List(sortedAnime) { anime in
                     NavigationLink(destination: AnimeDetailView(anime: anime)) {
                         MyAnimeRow(anime: anime)
                     }
@@ -30,15 +49,62 @@ struct MyAnimeListView: View {
             }
         }
         .navigationTitle("My Anime")
+        .searchable(text: $searchQuery, prompt: "Search My Anime")
         .task {
             await viewModel.filterAndFetchAnime()
         }
     }
+
+    private var filteredAnime: [Anime] {
+        let initialList: [Anime]
+        if searchQuery.isEmpty {
+            initialList = viewModel.trackedAnime
+        } else {
+            initialList = viewModel.trackedAnime.filter {
+                $0.title.lowercased().contains(searchQuery.lowercased())
+            }
+        }
+
+        if showOnlyWithProgress {
+            return initialList.filter {
+                let progress = StorageService.shared.getTrackedAnime(id: $0.id)?.watchedEpisodes ?? 0
+                return progress > 0
+            }
+        } else {
+            return initialList
+        }
+    }
+
+    private var sortedAnime: [Anime] {
+        switch sortOption {
+        case .title:
+            return filteredAnime.sorted { $0.title < $1.title }
+        case .status:
+            return filteredAnime.sorted {
+                let statusA = StorageService.shared.getTrackedAnime(id: $0.id)?.status.rawValue ?? ""
+                let statusB = StorageService.shared.getTrackedAnime(id: $1.id)?.status.rawValue ?? ""
+                return statusA < statusB
+            }
+        case .progress:
+            return filteredAnime.sorted {
+                let progressA = StorageService.shared.getTrackedAnime(id: $0.id)?.watchedEpisodes ?? 0
+                let progressB = StorageService.shared.getTrackedAnime(id: $1.id)?.watchedEpisodes ?? 0
+                return progressA > progressB
+            }
+        }
+    }
+}
+
+enum SortOption: String, CaseIterable, Identifiable {
+    case title = "Title"
+    case status = "Status"
+    case progress = "Progress"
+    var id: Self { self }
 }
 
 struct MyAnimeRow: View {
     let anime: Anime
-    
+
     private var trackedInfo: TrackedAnime? {
         StorageService.shared.getTrackedAnime(id: anime.id)
     }
@@ -54,7 +120,7 @@ struct MyAnimeRow: View {
                 Text(anime.title)
                     .font(.headline)
                     .lineLimit(2)
-                
+
                 if let status = trackedInfo?.status {
                     Text(status.rawValue)
                         .font(.subheadline)
@@ -87,8 +153,9 @@ struct MyAnimeRow: View {
             }
         }
         .padding(.vertical, 6)
+        .contentShape(Rectangle())
     }
-    
+
     private func statusColor(for status: TrackedAnime.Status) -> Color {
         switch status {
         case .watching: return .green

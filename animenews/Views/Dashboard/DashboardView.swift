@@ -1,5 +1,4 @@
 import SwiftUI
-import animenews
 
 struct DashboardView: View {
     @StateObject private var viewModel = DashboardViewModel()
@@ -16,9 +15,9 @@ struct DashboardView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "wifi.exclamationmark")
                         .font(.system(size: 50))
-                        .foregroundColor(Theme.mutedForeground)
+                        .foregroundColor(.secondary)
                     Text(errorMessage)
-                        .foregroundColor(Theme.mutedForeground)
+                        .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                     Button("Retry") {
@@ -27,7 +26,7 @@ struct DashboardView: View {
                         }
                     }
                     .buttonStyle(.bordered)
-                    .tint(Theme.accent)
+                    .tint(.accentColor)
                 }
                 .frame(maxWidth: .infinity, minHeight: 400)
             } else if viewModel.isLoading && viewModel.trendingAnime.isEmpty {
@@ -75,7 +74,7 @@ struct DashboardView: View {
                     VStack {
                         ActivityRing(
                             progress: viewModel.seasonalProgress,
-                            color: Theme.accent,
+                            color: .accentColor,
                             lineWidth: 16
                         )
                         .frame(width: 100, height: 100)
@@ -119,7 +118,7 @@ struct DashboardView: View {
                     .font(.caption)
                     .foregroundColor(Theme.muted)
 
-                TrendChart(data: viewModel.trendChartData, color: Theme.accent)
+                TrendChart(data: viewModel.trendChartData, color: .accentColor)
                     .frame(height: 120)
                     .padding(.top, 10)
             }
@@ -143,7 +142,7 @@ struct DashboardView: View {
                     Spacer()
                     HStack(spacing: 4) {
                         Image(systemName: "star.fill")
-                            .foregroundColor(Theme.accent)
+                            .foregroundColor(.accentColor)
                         Text(String(format: "%.2f", anime.score ?? 0.0))
                     }
                     .font(.subheadline)
