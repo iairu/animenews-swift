@@ -1,5 +1,4 @@
 import SwiftUI
-import animenews
 
 struct DashboardView: View {
     @StateObject private var viewModel = DashboardViewModel()
@@ -36,7 +35,7 @@ struct DashboardView: View {
             } else {
                 VStack(spacing: 20) {
                     activityRings
-
+                    
                     LazyVGrid(columns: columns, spacing: 20) {
                         trendingChart
                         trendingList
@@ -62,7 +61,7 @@ struct DashboardView: View {
             await viewModel.fetchDashboardData()
         }
     }
-
+    
     private var activityRings: some View {
         CardView {
             VStack {
@@ -70,7 +69,7 @@ struct DashboardView: View {
                     .font(.title2)
                     .fontWeight(.bold)
                     .frame(maxWidth: .infinity, alignment: .leading)
-
+                
                 HStack(spacing: 30) {
                     VStack {
                         ActivityRing(
@@ -87,7 +86,7 @@ struct DashboardView: View {
                             .font(.caption)
                             .foregroundColor(Theme.muted)
                     }
-
+                    
                     VStack {
                         // Placeholder until real data source is available
                         ActivityRing(
@@ -107,18 +106,18 @@ struct DashboardView: View {
             .foregroundColor(Theme.cardForeground)
         }
     }
-
+    
     private var trendingChart: some View {
         CardView {
             VStack(alignment: .leading) {
                 Text("Popularity Trend")
                     .font(.title2)
                     .fontWeight(.bold)
-
+                
                 Text("Top 5 Anime Scores")
                     .font(.caption)
                     .foregroundColor(Theme.muted)
-
+                
                 TrendChart(data: viewModel.trendChartData, color: Theme.accent)
                     .frame(height: 120)
                     .padding(.top, 10)
@@ -126,7 +125,7 @@ struct DashboardView: View {
             .foregroundColor(Theme.cardForeground)
         }
     }
-
+    
     @ViewBuilder
     private var trendingList: some View {
         let cardContent = VStack(alignment: .leading) {
@@ -134,7 +133,7 @@ struct DashboardView: View {
                 .font(.title2)
                 .fontWeight(.bold)
                 .padding(.bottom, 5)
-
+            
             ForEach(viewModel.trendingAnime) { anime in
                 HStack {
                     Text(anime.title)
@@ -155,7 +154,7 @@ struct DashboardView: View {
             }
         }
         .foregroundColor(Theme.cardForeground)
-
+        
         let card = CardView {
             cardContent
         }

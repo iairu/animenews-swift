@@ -49,3 +49,42 @@ perfect, navigation now works as it should, however in NewsListView, the followi
 We are now moving on to the Beta version. Continue implementing based on feature plan except AdMob.
 
 [@FEATURE_PLAN.md](file:///Users/iairu/Desktop/SWIFT/animenews/FEATURE_PLAN.md) [@RESEARCH.md](file:///Users/iairu/Desktop/SWIFT/animenews/RESEARCH.md)
+
+## 4.1 Gradual Adjustments
+
+app works now, make it more robust, refactor anything that should be refactored (e.g. abstract away), as for Dashboard aka Summary view, use a singular color scheme e.g. shadui inspired, use a different provider for anime thumbnails in database view, have the ability to track anime progress (anime with progress will show up in a separate Database-like view), add more data, have the "search for anime" pull real data, link progress to dashboard
+
+last session summary:
+
+I need a new thumbnail provider. AniList and Kitsu are good but require API interaction, which I want to avoid. A simple URL pattern using the MAL ID from Jikan would be ideal, but finding a reliable service is proving difficult. I'll investigate the Jikan API and `Anime.swift` to see if higher-resolution images from MAL are already available, which would be the simplest solution. I'll start by reading the `Anime.swift` model.The Jikan API offers various image sizes, so I'll update the `Anime` model to include `large_image_url` and use it in the views. This requires a significant refactoring of the `Anime` model to match the Jikan v4 API response, including nested image and genre structs. I'll update `Anime.swift`, then `AnimeDetailView.swift`, `AnimeListView.swift`, `DashboardView.swift`, `MyAnimeListView.swift`, and `AsyncImageView.swift` to use the new data structure. Starting with `Anime.swift`, I'll redefine the model and create a new placeholder.Okay, updating `AnimeRow` in `AnimeListView.swift`. I'm switching to `anime.images.jpg.largeImageUrl`, handling optional `anime.type`, `anime.year`, and `anime.score`, and fixing a typo in the `.task` modifier. I'll replace the entire file with these changes. `AnimeDetailView.swift` is next.
+
+Here is a summary of the improvements:
+- **New Thumbnails:** Updated to use higher-resolution image URLs from the Jikan API.
+- **`shadcn/ui` Inspired Theme:** Implemented a new, modern color scheme for the entire application.
+- **Live Dashboard:** The dashboard now reflects real-time data, including your progress for the current anime season.
+- **More Data:** The anime detail view now displays more information, such as rank, popularity, source, broadcast details, studios, and a link to the trailer.
+- **Robustness:** Improved error handling across the application to provide better feedback on network failures.
+- **Visual Progress:** The "My Anime" list now includes a progress bar and color-coded statuses for a clearer overview of your tracked shows.
+- 
+/Users/iairu/Desktop/SWIFT/animenews/animenews/Views/Database/AnimeDetailView.swift:5:41 Cannot find type 'AnimeDetailViewModel' in scope
+/Users/iairu/Desktop/SWIFT/animenews/animenews/Views/Database/AnimeDetailView.swift:48:64 Cannot find 'Theme' in scope
+/Users/iairu/Desktop/SWIFT/animenews/animenews/Views/Database/AnimeDetailView.swift:176:25 Cannot find 'TrackedAnime' in scope
+/Users/iairu/Desktop/SWIFT/animenews/animenews/Views/Database/AnimeListView.swift:38:42 Cannot find 'Theme' in scope
+/Users/iairu/Desktop/SWIFT/animenews/animenews/Views/News/NewsListView.swift:51:42 Cannot find 'Theme' in scope
+/Users/iairu/Desktop/SWIFT/animenews/animenews/Views/Main/RootView.swift:39:17 Cannot find 'MyAnimeListView' in scope
+
+## 4.2 Further Adjustments
+
+Important: You have direct project file access. You can also access xcodeproj any time using xcodeproj tool.
+
+Have Anime in "My Anime" view be clickable (currently it is disabled), which will send the user to the anime detail view within Database.
+
+Fix DatabaseView Search by adding a slight delay before performing the search to prevent excessive API calls.
+
+Add a search bar to the "My Anime" view to allow users to search for specific anime titles.
+
+Add a "Sort by" option to the "My Anime" view to allow users to sort their tracked shows by title, status, or progress.
+
+Add a "Filter by" option to the "My Anime" view to allow users to filter their tracked shows by status or progress.
+
+Adjust DashboardView to use system colors and system dark/light/auto appearance.

@@ -51,7 +51,9 @@ struct TrendChart: View {
 private extension Path {
     func getAreaPath(in size: CGSize) -> Path {
         var areaPath = self
-        guard let lastPoint = self.cgPath.currentPoint else { return areaPath }
+        guard !self.isEmpty else { return areaPath }
+        
+        let lastPoint = self.cgPath.currentPoint
         
         areaPath.addLine(to: CGPoint(x: lastPoint.x, y: size.height))
         areaPath.addLine(to: CGPoint(x: 0, y: size.height))

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AnimeListView: View {
     @StateObject private var viewModel = AnimeListViewModel()
+    @State private var searchQuery = ""
 
     private var listView: some View {
         List(viewModel.animeList) { anime in
@@ -14,7 +15,6 @@ struct AnimeListView: View {
 #if os(macOS)
             ToolbarItem(placement: .navigation) {
                 Button(action: {
-                    // This action toggles the sidebar in a multi-column layout.
                     NSApp.keyWindow?.firstResponder?.tryToPerform(#selector(NSSplitViewController.toggleSidebar(_:)), with: nil)
                 }) {
                     Image(systemName: "sidebar.left")
@@ -22,10 +22,47 @@ struct AnimeListView: View {
             }
 #endif
         }
-        .searchable(text: $viewModel.searchQuery, prompt: "Search for anime...")
+        .searchable(text: $searchQuery, prompt: "Search for anime...")
+        .onChange(of: searchQuery) { newValue in
+            Task {
+                // Manually debounce the search
+                // fixme: macOS 13 only: try? await Task.sleep(for: .milliseconds(500))
+                await viewModel.searchAnime(query: newValue)
+            }
+        }
         .overlay {
-            if viewModel.isLoading && viewModel.animeList.isEmpty {
+            if let errorMessage = viewModel.errorMessage {
+                VStack(spacing: 12) {
+                    Image(systemName: "wifi.exclamationmark")
+                        .font(.system(size: 50))
+                        .foregroundColor(Theme.mutedForeground)
+                    Text(errorMessage)
+                        .foregroundColor(Theme.mutedForeground)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    Button("Retry") {
+                        Task {
+                            if searchQuery.isEmpty {
+                                await viewModel.fetchTopAnime()
+                            } else {
+                                await viewModel.searchAnime(query: searchQuery)
+                            }
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(Theme.accent)
+                }
+            } else if viewModel.isLoading && viewModel.animeList.isEmpty {
                 ProgressView("Fetching Anime...")
+            } else if !viewModel.isLoading && viewModel.animeList.isEmpty && !searchQuery.isEmpty {
+                Text("No results for \"\(searchQuery)\"")
+                    .foregroundColor(Theme.mutedForeground)
+            }
+        }
+        .task {
+            // Fetch initial data only if the list is empty
+            if viewModel.animeList.isEmpty {
+                await viewModel.fetchTopAnime()
             }
         }
     }
@@ -49,7 +86,7 @@ struct AnimeRow: View {
     
     var body: some View {
         HStack(spacing: 12) {
-            AsyncImageView(url: URL(string: anime.imageUrl))
+            AsyncImageView(url: URL(string: anime.images.jpg.largeImageUrl))
                 .frame(width: 60, height: 90)
                 .background(Color.gray.opacity(0.3))
                 .cornerRadius(6)
@@ -58,16 +95,18 @@ struct AnimeRow: View {
                 Text(anime.title)
                     .font(.headline)
                     .lineLimit(2)
-                Text("\(anime.type) • \(String(anime.year))")
+                Text("\(anime.type ?? "N/A") • \(anime.year != nil ? String(anime.year!) : "N/A")")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-                HStack(spacing: 4) {
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.yellow)
-                        .font(.caption)
-                    Text(String(format: "%.2f", anime.score))
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                if let score = anime.score, score > 0 {
+                    HStack(spacing: 4) {
+                        Image(systemName: "star.fill")
+                            .foregroundColor(.yellow)
+                            .font(.caption)
+                        Text(String(format: "%.2f", score))
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
         }

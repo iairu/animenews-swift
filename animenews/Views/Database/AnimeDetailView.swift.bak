@@ -228,3 +228,4 @@ struct AnimeDetailView_Previews: PreviewProvider {
         .preferredColorScheme(.dark)
     }
 }
+

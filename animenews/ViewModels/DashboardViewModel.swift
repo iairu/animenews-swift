@@ -1,6 +1,6 @@
 import SwiftUI
-import Combine
 
+@MainActor
 class DashboardViewModel: ObservableObject {
     @Published var seasonalProgress: Double = 0.0
     @Published var watchingCount: Int = 0
@@ -8,40 +8,42 @@ class DashboardViewModel: ObservableObject {
     @Published var trendingAnime: [Anime] = []
     @Published var trendChartData: [Double] = []
     @Published var isLoading: Bool = false
+    @Published var errorMessage: String?
 
     private let jikanService = JikanService()
-    private var cancellables = Set<AnyCancellable>()
 
-    init() {
-        fetchDashboardData()
-    }
-
-    func fetchDashboardData() {
+    func fetchDashboardData() async {
         isLoading = true
+        errorMessage = nil
         
-        // In a real app, this would be more complex.
-        // We would fetch user's watchlist and compare with top seasonal anime.
-        // For now, we will simulate the data for the activity rings.
+        // 1. Fetch user's watching data from StorageService
+        let allTracked = StorageService.shared.getAllTrackedAnimes()
+        self.watchingCount = allTracked.filter { $0.status == .watching }.count
         
-        // 1. Simulate user's watching data
-        self.watchingCount = 7
-        self.totalShowsInSeason = 25
-        self.seasonalProgress = Double(watchingCount) / Double(totalShowsInSeason)
+        // Concurrently fetch top anime and seasonal anime
+        do {
+            async let topAnimeFetch = jikanService.fetchTopAnime()
+            async let seasonalAnimeFetch = jikanService.fetchCurrentSeasonAnime()
+            
+            // 2. Fetch top anime for the "Trending" card and chart
+            let topAnime = try await topAnimeFetch
+            let topFive = Array(topAnime.prefix(5))
+            self.trendingAnime = topFive
+            self.trendChartData = topFive.map { $0.score ?? 0.0 }.reversed()
+            
+            // 3. Fetch seasonal anime to calculate progress
+            let seasonalAnime = try await seasonalAnimeFetch
+            self.totalShowsInSeason = seasonalAnime.count
+            
+            if totalShowsInSeason > 0 {
+                self.seasonalProgress = Double(watchingCount) / Double(totalShowsInSeason)
+            }
+            
+        } catch {
+            self.errorMessage = "Failed to fetch dashboard data: \(error.localizedDescription)"
+            print("Error fetching dashboard data: \(error)")
+        }
         
-        // 2. Fetch top anime for the "Trending" card and chart
-        jikanService.fetchTopAnime()
-            .sink(receiveCompletion: { [weak self] completion in
-                self?.isLoading = false
-                if case .failure(let error) = completion {
-                    // TODO: Better error handling
-                    print("Error fetching top anime: \(error)")
-                }
-            }, receiveValue: { [weak self] response in
-                let topFive = Array(response.data.prefix(5))
-                self?.trendingAnime = topFive
-                // Use the scores of the top anime for the trend chart, reversed for effect
-                self?.trendChartData = topFive.map { $0.score }.reversed()
-            })
-            .store(in: &cancellables)
+        isLoading = false
     }
 }

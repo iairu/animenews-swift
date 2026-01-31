@@ -44,7 +44,7 @@ struct AsyncImageView: View {
 
 struct AsyncImageView_Previews: PreviewProvider {
     static var previews: some View {
-        AsyncImageView(url: URL(string: Anime.placeholder.imageUrl))
+        AsyncImageView(url: URL(string: Anime.placeholder.images.jpg.largeImageUrl))
             .frame(width: 200, height: 300)
             .cornerRadius(10)
             .previewLayout(.sizeThatFits)

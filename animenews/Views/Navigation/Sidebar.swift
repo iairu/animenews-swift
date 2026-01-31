@@ -13,10 +13,13 @@ struct Sidebar: View {
                     // A proper implementation might use sections.
                 }
                 
-                NavigationLink(value: item) {
+                NavigationLink(
+                    destination: EmptyView(), // Destination is handled by the selection binding
+                    tag: item,
+                    selection: $selection
+                ) {
                     item.icon
                 }
-                .tag(item)
             }
         }
         .listStyle(.sidebar)

@@ -38,15 +38,30 @@ struct NewsListView: View {
                 }
             }
         }
-        .onAppear {
-            // This is useful if the data needs to be refreshed when the view appears.
-            // The ViewModel already fetches on init, so this is for subsequent appearances.
+        .task {
             if viewModel.newsItems.isEmpty {
-                viewModel.fetchNews()
+                await viewModel.fetchNews()
             }
         }
         .overlay {
-            if viewModel.isLoading {
+            if let errorMessage = viewModel.errorMessage {
+                VStack(spacing: 12) {
+                    Image(systemName: "wifi.exclamationmark")
+                        .font(.system(size: 50))
+                        .foregroundColor(Theme.mutedForeground)
+                    Text(errorMessage)
+                        .foregroundColor(Theme.mutedForeground)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                    Button("Retry") {
+                        Task {
+                            await viewModel.fetchNews()
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(Theme.accent)
+                }
+            } else if viewModel.isLoading {
                 ProgressView()
             }
         }
@@ -74,7 +89,7 @@ struct NewsRow: View {
             Text(item.source)
                 .font(.caption)
                 .fontWeight(.bold)
-                .foregroundColor(.pink)
+                .foregroundColor(Theme.accent)
             
             Text(item.title)
                 .font(.headline)
@@ -86,7 +101,7 @@ struct NewsRow: View {
             
             Text(item.pubDate, style: .relative)
                 .font(.caption)
-                .foregroundColor(.gray)
+                .foregroundColor(Theme.muted)
                 .padding(.top, 4)
         }
         .padding(.vertical, 8)
