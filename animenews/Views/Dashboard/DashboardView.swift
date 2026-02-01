@@ -2,8 +2,7 @@ import SwiftUI
 
 struct DashboardView: View {
     @StateObject private var viewModel = DashboardViewModel()
-
-    // Define the grid layout: two columns of flexible width.
+    
     private let columns: [GridItem] = [
         GridItem(.flexible()),
         GridItem(.flexible())
@@ -12,39 +11,44 @@ struct DashboardView: View {
     var body: some View {
         ScrollView {
             if let errorMessage = viewModel.errorMessage {
-                VStack(spacing: 12) {
-                    Image(systemName: "wifi.exclamationmark")
-                        .font(.system(size: 50))
-                        .foregroundColor(.secondary)
-                    Text(errorMessage)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                    Button("Retry") {
-                        Task {
-                            await viewModel.fetchDashboardData()
-                        }
-                    }
-                    .buttonStyle(.bordered)
-                    .tint(.accentColor)
-                }
-                .frame(maxWidth: .infinity, minHeight: 400)
+                errorView(message: errorMessage)
             } else if viewModel.isLoading && viewModel.trendingAnime.isEmpty {
-                ProgressView("Fetching Dashboard Data...")
+                ProgressView("Loading Dashboard...")
                     .frame(maxWidth: .infinity, minHeight: 400)
             } else {
-                VStack(spacing: 20) {
-                    activityRings
-
+                VStack(spacing: 24) {
+                    // Header with date
+                    headerSection
+                    
+                    // Quick Stats Row
+                    quickStatsSection
+                    
+                    // Main Grid
                     LazyVGrid(columns: columns, spacing: 20) {
-                        trendingChart
-                        trendingList
+                        // Activity Rings
+                        activityRingsCard
+                        
+                        // Library Overview
+                        libraryOverviewCard
+                        
+                        // Trending Chart
+                        trendingChartCard
+                        
+                        // Trending List
+                        trendingListCard
+                    }
+                    
+                    // Seasonal Anime Section
+                    seasonalAnimeSection
+                    
+                    // Upcoming Episodes
+                    if !viewModel.upcomingEpisodes.isEmpty {
+                        upcomingEpisodesSection
                     }
                 }
                 .padding()
             }
         }
-        .background(Theme.background.ignoresSafeArea())
         .navigationTitle("Summary")
         .toolbar {
             #if os(macOS)
@@ -55,117 +59,418 @@ struct DashboardView: View {
                     Image(systemName: "sidebar.left")
                 }
             }
+            
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: {
+                    Task { await viewModel.fetchDashboardData() }
+                }) {
+                    Image(systemName: "arrow.clockwise")
+                }
+            }
             #endif
         }
         .task {
             await viewModel.fetchDashboardData()
         }
     }
-
-    private var activityRings: some View {
+    
+    // MARK: - Header Section
+    private var headerSection: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(formattedDate)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Text("Your Anime Dashboard")
+                    .font(.title)
+                    .fontWeight(.bold)
+            }
+            
+            Spacer()
+            
+            // Season Badge
+            HStack(spacing: 6) {
+                Image(systemName: seasonIcon)
+                Text("\(viewModel.currentSeason) \(String(viewModel.currentYear))")
+                    .fontWeight(.medium)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color.accentColor.opacity(0.2))
+            .cornerRadius(20)
+        }
+    }
+    
+    private var formattedDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMMM d"
+        return formatter.string(from: Date())
+    }
+    
+    private var seasonIcon: String {
+        switch viewModel.currentSeason {
+        case "Winter": return "snowflake"
+        case "Spring": return "leaf.fill"
+        case "Summer": return "sun.max.fill"
+        default: return "leaf.fill"
+        }
+    }
+    
+    // MARK: - Quick Stats
+    private var quickStatsSection: some View {
+        HStack(spacing: 16) {
+            QuickStatCard(
+                title: "Episodes Watched",
+                value: "\(viewModel.totalEpisodesWatched)",
+                icon: "play.circle.fill",
+                color: .blue
+            )
+            
+            QuickStatCard(
+                title: "Avg. Score",
+                value: viewModel.averageScore > 0 ? String(format: "%.1f", viewModel.averageScore) : "N/A",
+                icon: "star.fill",
+                color: .yellow
+            )
+            
+            QuickStatCard(
+                title: "Completed",
+                value: "\(viewModel.completedCount)",
+                icon: "checkmark.circle.fill",
+                color: .green
+            )
+            
+            QuickStatCard(
+                title: "Plan to Watch",
+                value: "\(viewModel.planToWatchCount)",
+                icon: "bookmark.fill",
+                color: .purple
+            )
+        }
+    }
+    
+    // MARK: - Activity Rings Card
+    private var activityRingsCard: some View {
         CardView {
-            VStack {
+            VStack(alignment: .leading, spacing: 16) {
                 Text("Seasonal Activity")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 HStack(spacing: 30) {
                     VStack {
                         ActivityRing(
                             progress: viewModel.seasonalProgress,
                             color: .accentColor,
-                            lineWidth: 16
+                            lineWidth: 14
                         )
-                        .frame(width: 100, height: 100)
+                        .frame(width: 90, height: 90)
                         .overlay(
-                            Text("\(viewModel.watchingCount)/\(viewModel.totalShowsInSeason)")
-                                .font(.headline)
+                            Text("\(viewModel.watchingCount)")
+                                .font(.title2)
+                                .fontWeight(.bold)
                         )
                         Text("Watching")
                             .font(.caption)
-                            .foregroundColor(Theme.muted)
+                            .foregroundColor(.secondary)
                     }
 
                     VStack {
-                        // Placeholder until real data source is available
                         ActivityRing(
-                            progress: 0.82,
-                            color: Theme.primary,
-                            lineWidth: 16
+                            progress: viewModel.totalShowsInSeason > 0 ? Double(viewModel.completedCount) / Double(viewModel.totalShowsInSeason) : 0,
+                            color: .green,
+                            lineWidth: 14
                         )
-                        .frame(width: 100, height: 100)
-                        .overlay(Text("82%").font(.headline))
-                        Text("Coverage")
+                        .frame(width: 90, height: 90)
+                        .overlay(
+                            Text("\(viewModel.completedCount)")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                        )
+                        Text("Completed")
                             .font(.caption)
-                            .foregroundColor(Theme.muted)
+                            .foregroundColor(.secondary)
                     }
                 }
-                .padding(.top)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 8)
             }
-            .foregroundColor(Theme.cardForeground)
         }
     }
-
-    private var trendingChart: some View {
+    
+    // MARK: - Library Overview Card
+    private var libraryOverviewCard: some View {
         CardView {
-            VStack(alignment: .leading) {
-                Text("Popularity Trend")
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Library Overview")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                
+                VStack(spacing: 12) {
+                    LibraryStatRow(
+                        label: "Currently Watching",
+                        value: viewModel.watchingCount,
+                        color: .blue,
+                        icon: "play.fill"
+                    )
+                    
+                    LibraryStatRow(
+                        label: "Completed",
+                        value: viewModel.completedCount,
+                        color: .green,
+                        icon: "checkmark"
+                    )
+                    
+                    LibraryStatRow(
+                        label: "Plan to Watch",
+                        value: viewModel.planToWatchCount,
+                        color: .purple,
+                        icon: "bookmark"
+                    )
+                    
+                    Divider()
+                    
+                    HStack {
+                        Text("Total in Library")
+                            .fontWeight(.medium)
+                        Spacer()
+                        Text("\(viewModel.watchingCount + viewModel.completedCount + viewModel.planToWatchCount)")
+                            .fontWeight(.bold)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Trending Chart Card
+    private var trendingChartCard: some View {
+        CardView {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Top Anime Scores")
                     .font(.title2)
                     .fontWeight(.bold)
 
-                Text("Top 5 Anime Scores")
+                Text("Current top 5 by rating")
                     .font(.caption)
-                    .foregroundColor(Theme.muted)
+                    .foregroundColor(.secondary)
 
                 TrendChart(data: viewModel.trendChartData, color: .accentColor)
-                    .frame(height: 120)
-                    .padding(.top, 10)
+                    .frame(height: 100)
+                    .padding(.top, 8)
             }
-            .foregroundColor(Theme.cardForeground)
         }
     }
-
+    
+    // MARK: - Trending List Card
     @ViewBuilder
-    private var trendingList: some View {
-        let cardContent = VStack(alignment: .leading) {
-            Text("Trending Now")
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.bottom, 5)
+    private var trendingListCard: some View {
+        CardView {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Trending Now")
+                    .font(.title2)
+                    .fontWeight(.bold)
 
-            ForEach(viewModel.trendingAnime) { anime in
-                HStack {
-                    Text(anime.title)
-                        .font(.headline)
-                        .lineLimit(1)
-                    Spacer()
-                    HStack(spacing: 4) {
-                        Image(systemName: "star.fill")
-                            .foregroundColor(.accentColor)
-                        Text(String(format: "%.2f", anime.score ?? 0.0))
+                ForEach(Array(viewModel.trendingAnime.enumerated()), id: \.element.id) { index, anime in
+                    HStack {
+                        Text("#\(index + 1)")
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundColor(.secondary)
+                            .frame(width: 24)
+                        
+                        Text(anime.title)
+                            .font(.subheadline)
+                            .lineLimit(1)
+                        
+                        Spacer()
+                        
+                        HStack(spacing: 4) {
+                            Image(systemName: "star.fill")
+                                .foregroundColor(.yellow)
+                            Text(String(format: "%.1f", anime.score ?? 0.0))
+                        }
+                        .font(.caption.weight(.medium))
                     }
-                    .font(.subheadline)
-                }
-                .padding(.vertical, 4)
-                if anime.id != viewModel.trendingAnime.last?.id {
-                    Divider().background(Theme.border)
+                    .padding(.vertical, 4)
+                    
+                    if index < viewModel.trendingAnime.count - 1 {
+                        Divider()
+                    }
                 }
             }
         }
-        .foregroundColor(Theme.cardForeground)
-
-        let card = CardView {
-            cardContent
+    }
+    
+    // MARK: - Seasonal Anime Section
+    private var seasonalAnimeSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("\(viewModel.currentSeason) \(String(viewModel.currentYear)) Anime")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                
+                Spacer()
+                
+                Text("\(viewModel.totalShowsInSeason) shows")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 16) {
+                    ForEach(viewModel.seasonalAnime) { anime in
+                        SeasonalAnimeCard(anime: anime)
+                    }
+                }
+                .padding(.horizontal, 4)
+            }
         }
+    }
+    
+    // MARK: - Upcoming Episodes Section
+    private var upcomingEpisodesSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Continue Watching")
+                .font(.title2)
+                .fontWeight(.bold)
+            
+            VStack(spacing: 12) {
+                ForEach(viewModel.upcomingEpisodes, id: \.anime.id) { item in
+                    HStack {
+                        AsyncImageView(url: URL(string: item.anime.images.jpg.imageUrl))
+                            .frame(width: 50, height: 70)
+                            .cornerRadius(6)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(item.anime.title)
+                                .font(.headline)
+                                .lineLimit(1)
+                            Text("Episode \(item.nextEpisode)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Image(systemName: "play.circle.fill")
+                            .font(.title)
+                            .foregroundColor(.accentColor)
+                    }
+                    .padding()
+                    .background(Color.secondary.opacity(0.1))
+                    .cornerRadius(12)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Error View
+    private func errorView(message: String) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: "wifi.exclamationmark")
+                .font(.system(size: 50))
+                .foregroundColor(.secondary)
+            Text(message)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            Button("Retry") {
+                Task { await viewModel.fetchDashboardData() }
+            }
+            .buttonStyle(.bordered)
+            .tint(.accentColor)
+        }
+        .frame(maxWidth: .infinity, minHeight: 400)
+    }
+}
 
-        if #available(macOS 13.0, *) {
-            card.gridCellUnsizedAxes([.vertical])
-        } else {
-            card
+// MARK: - Supporting Views
+
+struct QuickStatCard: View {
+    let title: String
+    let value: String
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(color)
+            
+            Text(value)
+                .font(.title)
+                .fontWeight(.bold)
+            
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+        #if os(macOS)
+        .background(.regularMaterial)
+        #else
+        .background(Color(.secondarySystemGroupedBackground))
+        #endif
+        .cornerRadius(12)
+    }
+}
+
+struct LibraryStatRow: View {
+    let label: String
+    let value: Int
+    let color: Color
+    let icon: String
+    
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundColor(color)
+                .frame(width: 20)
+            
+            Text(label)
+            
+            Spacer()
+            
+            Text("\(value)")
+                .fontWeight(.semibold)
         }
     }
 }
+
+struct SeasonalAnimeCard: View {
+    let anime: Anime
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            AsyncImageView(url: URL(string: anime.images.jpg.largeImageUrl))
+                .frame(width: 120, height: 170)
+                .cornerRadius(8)
+            
+            Text(anime.title)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .lineLimit(2)
+                .frame(width: 120, alignment: .leading)
+            
+            HStack(spacing: 4) {
+                if let score = anime.score, score > 0 {
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.yellow)
+                    Text(String(format: "%.1f", score))
+                } else {
+                    Text("Not rated")
+                        .foregroundColor(.secondary)
+                }
+            }
+            .font(.caption)
+        }
+    }
+}
+
+// MARK: - Previews
 
 struct DashboardView_Previews: PreviewProvider {
     static var previews: some View {

@@ -40,4 +40,9 @@ class AnimeListViewModel: ObservableObject {
         }
         isLoading = false
     }
+    
+    func fetchSeasonalAnime() async {
+        // For now, delegates to fetchTopAnime
+        await fetchTopAnime()
+    }
 }

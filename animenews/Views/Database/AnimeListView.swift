@@ -4,7 +4,7 @@ struct AnimeListView: View {
     @StateObject private var viewModel = AnimeListViewModel()
     @State private var searchQuery = ""
 
-    private var listView: some View {
+    var body: some View {
         List(viewModel.animeList) { anime in
             NavigationLink(destination: AnimeDetailView(anime: anime)) {
                 AnimeRow(anime: anime)
@@ -12,7 +12,7 @@ struct AnimeListView: View {
         }
         .navigationTitle("Anime Database")
         .toolbar {
-#if os(macOS)
+            #if os(macOS)
             ToolbarItem(placement: .navigation) {
                 Button(action: {
                     NSApp.keyWindow?.firstResponder?.tryToPerform(#selector(NSSplitViewController.toggleSidebar(_:)), with: nil)
@@ -20,12 +20,20 @@ struct AnimeListView: View {
                     Image(systemName: "sidebar.left")
                 }
             }
-#endif
+            #endif
+            
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button(action: {
+                    Task { await viewModel.fetchTopAnime() }
+                }) {
+                    Image(systemName: "arrow.clockwise")
+                }
+            }
         }
         .searchable(text: $searchQuery, prompt: "Search for anime...")
         .onChange(of: searchQuery) { newValue in
             Task {
-                // Manually debounce the search
+                // Debounce the search
                 try? await Task.sleep(nanoseconds: 500_000_000)
                 await viewModel.searchAnime(query: newValue)
             }
@@ -35,9 +43,9 @@ struct AnimeListView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "wifi.exclamationmark")
                         .font(.system(size: 50))
-                        .foregroundColor(Theme.mutedForeground)
+                        .foregroundColor(.secondary)
                     Text(errorMessage)
-                        .foregroundColor(Theme.mutedForeground)
+                        .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
                     Button("Retry") {
@@ -50,13 +58,13 @@ struct AnimeListView: View {
                         }
                     }
                     .buttonStyle(.bordered)
-                    .tint(Theme.accent)
+                    .tint(.accentColor)
                 }
             } else if viewModel.isLoading && viewModel.animeList.isEmpty {
                 ProgressView("Fetching Anime...")
             } else if !viewModel.isLoading && viewModel.animeList.isEmpty && !searchQuery.isEmpty {
                 Text("No results for \"\(searchQuery)\"")
-                    .foregroundColor(Theme.mutedForeground)
+                    .foregroundColor(.secondary)
             }
         }
         .task {
@@ -65,19 +73,6 @@ struct AnimeListView: View {
                 await viewModel.fetchTopAnime()
             }
         }
-    }
-
-    var body: some View {
-        #if os(macOS)
-        NavigationView {
-            listView
-            Text("Select an anime to see details.")
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .foregroundColor(.secondary)
-        }
-        #else
-        listView
-        #endif
     }
 }
 

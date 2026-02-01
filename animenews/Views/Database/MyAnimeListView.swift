@@ -153,9 +153,77 @@ struct MyAnimeRow: View {
             }
         }
         .padding(.vertical, 6)
-        .contentShape(Rectangle())
+        .contextMenu {
+            Button(action: {
+                incrementProgress()
+            }) {
+                Label("Add Episode (+1)", systemImage: "plus.circle")
+            }
+            .disabled(trackedInfo?.status == .completed)
+            
+            Button(action: {
+                decrementProgress()
+            }) {
+                Label("Remove Episode (-1)", systemImage: "minus.circle")
+            }
+            .disabled((trackedInfo?.watchedEpisodes ?? 0) <= 0)
+            
+            Divider()
+            
+            Menu("Set Status") {
+                ForEach(TrackedAnime.Status.allCases, id: \.self) { status in
+                    Button(status.rawValue) {
+                        updateStatus(status)
+                    }
+                }
+            }
+            
+            Divider()
+            
+            Button(action: {
+                copyToClipboard(anime.url)
+            }) {
+                Label("Copy Link", systemImage: "doc.on.doc")
+            }
+        }
     }
 
+    private func incrementProgress() {
+        guard var tracked = StorageService.shared.getTrackedAnime(id: anime.id) else { return }
+        if let total = anime.episodes, tracked.watchedEpisodes >= total { return }
+        tracked.watchedEpisodes += 1
+        if let total = anime.episodes, tracked.watchedEpisodes == total {
+            tracked.status = .completed
+        } else if tracked.status == .planToWatch {
+            tracked.status = .watching
+        }
+        StorageService.shared.update(anime: tracked)
+    }
+    
+    private func decrementProgress() {
+        guard var tracked = StorageService.shared.getTrackedAnime(id: anime.id) else { return }
+        if tracked.watchedEpisodes > 0 {
+            tracked.watchedEpisodes -= 1
+            StorageService.shared.update(anime: tracked)
+        }
+    }
+    
+    private func updateStatus(_ status: TrackedAnime.Status) {
+        if var tracked = StorageService.shared.getTrackedAnime(id: anime.id) {
+            tracked.status = status
+            StorageService.shared.update(anime: tracked)
+        }
+    }
+    
+    private func copyToClipboard(_ text: String) {
+        #if os(macOS)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+        #else
+        UIPasteboard.general.string = text
+        #endif
+    }
+    
     private func statusColor(for status: TrackedAnime.Status) -> Color {
         switch status {
         case .watching: return .green

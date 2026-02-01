@@ -10,12 +10,15 @@ struct CardView<Content: View>: View {
     var body: some View {
         content
             .padding()
-            .background(Theme.card)
+            #if os(macOS)
+            .background(.regularMaterial)
+            #else
+            .background(Color(.secondarySystemGroupedBackground))
+            #endif
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Theme.border, lineWidth: 1)
+                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
             )
-            .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
     }
 }

@@ -13,12 +13,18 @@ struct Sidebar: View {
                     // A proper implementation might use sections.
                 }
                 
-                NavigationLink(
-                    destination: EmptyView(), // Destination is handled by the selection binding
-                    tag: item,
-                    selection: $selection
-                ) {
-                    item.icon
+                if #available(iOS 16.0, *) {
+                    // NavigationLink(value: item) {
+                    //    item.icon
+                    // }
+                } else {
+                    NavigationLink(
+                        destination: EmptyView(),
+                        tag: item,
+                        selection: $selection
+                    ) {
+                        item.icon
+                    }
                 }
             }
         }
