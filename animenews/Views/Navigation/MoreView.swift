@@ -1,5 +1,6 @@
 import SwiftUI
 
+#if os(iOS)
 struct MoreView: View {
     @ObservedObject var tabManager: TabManager
     @State private var showingEditSheet = false
@@ -89,3 +90,4 @@ struct EditTabsView: View {
         }
     }
 }
+#endif

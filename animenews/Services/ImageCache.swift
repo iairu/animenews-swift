@@ -36,13 +36,13 @@ actor ImageCache {
                 #if os(macOS)
                 if let nsImage = NSImage(data: data) {
                     let image = Image(nsImage: nsImage)
-                    await store(image, for: url)
+                    store(image, for: url)
                     return image
                 }
                 #else
                 if let uiImage = UIImage(data: data) {
                     let image = Image(uiImage: uiImage)
-                    await store(image, for: url)
+                    store(image, for: url)
                     return image
                 }
                 #endif

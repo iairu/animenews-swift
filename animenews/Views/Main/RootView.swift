@@ -10,6 +10,7 @@ struct RootView: View {
     }
 }
 
+#if os(iOS)
 /// The main TabView for iOS devices.
 struct MainTabView: View {
     @StateObject private var tabManager = TabManager()
@@ -50,6 +51,7 @@ struct MainTabView: View {
         }
     }
 }
+#endif
 
 /// The main NavigationView for macOS, providing adaptive column layout
 struct MainNavigationView: View {

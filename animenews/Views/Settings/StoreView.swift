@@ -98,7 +98,7 @@ class StoreManager: ObservableObject {
     private func listenForTransactions() -> Task<Void, Error> {
         return Task.detached {
             for await result in Transaction.updates {
-                await MainActor.run {
+                _ = await MainActor.run {
                     Task {
                         do {
                             let transaction = try self.checkVerified(result)
