@@ -1,0 +1,135 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    name: Build macOS App
+    runs-on: macos-14
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+      
+      - name: Build macOS App
+        run: |
+          xcodebuild -project animenews.xcodeproj \
+            -scheme animenews \
+            -configuration Release \
+            -destination 'platform=macOS' \
+            -archivePath $RUNNER_TEMP/animenews-macos.xcarchive \
+            archive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+      
+      - name: Create App from Archive
+        run: |
+          mkdir -p $RUNNER_TEMP/macos-app
+          cp -R "$RUNNER_TEMP/animenews-macos.xcarchive/Products/Applications/animenews.app" $RUNNER_TEMP/macos-app/
+      
+      - name: Create DMG
+        run: |
+          hdiutil create -volname "AnimeNews" \
+            -srcfolder $RUNNER_TEMP/macos-app \
+            -ov -format UDZO \
+            $RUNNER_TEMP/AnimeNews-macOS.dmg
+      
+      - name: Upload DMG Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: ${{ runner.temp }}/AnimeNews-macOS.dmg
+
+  build-ios:
+    name: Build iOS App
+    runs-on: macos-14
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+      
+      - name: Build iOS Archive
+        run: |
+          xcodebuild -project animenews.xcodeproj \
+            -scheme animenews \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath $RUNNER_TEMP/animenews-ios.xcarchive \
+            archive \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+      
+      - name: Create IPA
+        run: |
+          mkdir -p $RUNNER_TEMP/Payload
+          cp -R "$RUNNER_TEMP/animenews-ios.xcarchive/Products/Applications/animenews.app" $RUNNER_TEMP/Payload/
+          cd $RUNNER_TEMP
+          zip -r AnimeNews-iOS.ipa Payload
+      
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: ${{ runner.temp }}/AnimeNews-iOS.ipa
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-macos, build-ios]
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Download macOS DMG
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-dmg
+          path: ./artifacts
+      
+      - name: Download iOS IPA
+        uses: actions/download-artifact@v4
+        with:
+          name: ios-ipa
+          path: ./artifacts
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## Downloads
+            
+            - **AnimeNews-macOS.dmg** - macOS application
+            - **AnimeNews-iOS.ipa** - iOS application (sideload)
+            
+            ### Installation
+            
+            **macOS:**
+            1. Download the DMG file
+            2. Open the DMG and drag the app to Applications
+            3. Right-click the app and select "Open" on first launch
+            
+            **iOS:**
+            Install using AltStore, Sideloadly, or another sideloading tool.
+          files: |
+            ./artifacts/AnimeNews-macOS.dmg
+            ./artifacts/AnimeNews-iOS.ipa
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
