@@ -25,7 +25,14 @@ actor ImageCache {
         // Start new loading task
         let task = Task<Image?, Never> {
             do {
+                // Check for cancellation before network request
+                try Task.checkCancellation()
+                
                 let (data, _) = try await URLSession.shared.data(from: url)
+                
+                // Check for cancellation after network request
+                try Task.checkCancellation()
+                
                 #if os(macOS)
                 if let nsImage = NSImage(data: data) {
                     let image = Image(nsImage: nsImage)
@@ -39,6 +46,9 @@ actor ImageCache {
                     return image
                 }
                 #endif
+            } catch is CancellationError {
+                // Task was cancelled, just return nil silently
+                return nil
             } catch {
                 print("Failed to load image: \(error.localizedDescription)")
             }
@@ -81,10 +91,11 @@ struct CachedAsyncImage: View {
     let url: URL?
     @State private var image: Image?
     @State private var isLoading = false
+    @State private var currentURL: URL?
     
     var body: some View {
         Group {
-            if let image = image {
+            if let image = image, currentURL == url {
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -103,16 +114,47 @@ struct CachedAsyncImage: View {
             }
         }
         .clipped()
+        .onChange(of: url) { newURL in
+            // Reset state when URL changes
+            if newURL != currentURL {
+                image = nil
+                isLoading = false
+            }
+        }
         .task(id: url) {
             await loadImage()
         }
     }
     
     private func loadImage() async {
-        guard let url = url else { return }
+        guard let url = url else { 
+            image = nil
+            isLoading = false
+            return 
+        }
         
+        // Reset for new URL
+        currentURL = url
+        image = nil
         isLoading = true
-        image = await ImageCache.shared.image(for: url)
-        isLoading = false
+        
+        // Check cancellation before async call
+        guard !Task.isCancelled else {
+            isLoading = false
+            return
+        }
+        
+        let loadedImage = await ImageCache.shared.image(for: url)
+        
+        // Check cancellation after async call - task may have been cancelled while loading
+        guard !Task.isCancelled else {
+            return
+        }
+        
+        // Only update if this is still the current URL
+        if currentURL == url {
+            image = loadedImage
+            isLoading = false
+        }
     }
 }

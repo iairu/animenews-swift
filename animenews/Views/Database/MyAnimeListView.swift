@@ -9,13 +9,24 @@ struct MyAnimeListView: View {
     var body: some View {
         VStack {
             VStack {
-                Picker("Status", selection: $viewModel.statusFilter) {
-                    Text("All").tag(nil as TrackedAnime.Status?)
+                Menu {
+                    Button("All") { viewModel.statusFilter = nil }
+                    Divider()
                     ForEach(TrackedAnime.Status.allCases, id: \.self) { status in
-                        Text(status.rawValue).tag(Optional(status))
+                        Button(status.rawValue) { viewModel.statusFilter = status }
                     }
+                } label: {
+                    HStack {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                        Text(viewModel.statusFilter?.rawValue ?? "All Statuses")
+                        Image(systemName: "chevron.down")
+                            .font(.caption)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.accentColor.opacity(0.15))
+                    .cornerRadius(8)
                 }
-                .pickerStyle(.segmented)
 
                 HStack {
                     Picker("Sort by", selection: $sortOption) {

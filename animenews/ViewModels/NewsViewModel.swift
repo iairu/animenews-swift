@@ -14,7 +14,10 @@ class NewsViewModel: ObservableObject {
         self.errorMessage = nil
         do {
             let items = try await rssParser.fetchNews()
-            self.newsItems = items.sorted(by: { $0.pubDate > $1.pubDate })
+            // Deduplicate by link
+            var seen = Set<String>()
+            let uniqueItems = items.filter { seen.insert($0.link).inserted }
+            self.newsItems = uniqueItems.sorted(by: { $0.pubDate > $1.pubDate })
         } catch {
             self.errorMessage = "Failed to fetch news: \(error.localizedDescription)"
             self.newsItems = []

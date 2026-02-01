@@ -7,18 +7,38 @@ struct ScheduleView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Day picker
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
+            // Day picker dropdown
+            HStack {
+                Menu {
                     ForEach(DayOfWeek.allCases, id: \.self) { day in
-                        DayButton(day: day, isSelected: selectedDay == day) {
+                        Button(action: {
                             selectedDay = day
                             Task { await viewModel.fetchSchedule(for: day) }
+                        }) {
+                            HStack {
+                                Text(day.rawValue)
+                                if selectedDay == day {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
                         }
                     }
+                } label: {
+                    HStack {
+                        Image(systemName: "calendar")
+                        Text(selectedDay.rawValue)
+                        Image(systemName: "chevron.down")
+                            .font(.caption)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.accentColor.opacity(0.15))
+                    .cornerRadius(8)
                 }
-                .padding()
+                
+                Spacer()
             }
+            .padding()
             
             Divider()
             
@@ -228,7 +248,9 @@ class ScheduleViewModel: ObservableObject {
         
         do {
             let anime = try await jikanService.fetchSchedule(day: day.apiValue)
-            self.scheduledAnime = anime
+            // Deduplicate by malId
+            var seen = Set<Int>()
+            self.scheduledAnime = anime.filter { seen.insert($0.malId).inserted }
         } catch {
             self.errorMessage = error.localizedDescription
             print("Error fetching schedule: \(error)")

@@ -34,7 +34,9 @@ class JikanService {
         guard !query.trimmingCharacters(in: .whitespaces).isEmpty else {
             return []
         }
-        var components = URLComponents(url: baseURL.appendingPathComponent("anime"), resolvingAgainstBaseURL: false)!
+        guard var components = URLComponents(url: baseURL.appendingPathComponent("anime"), resolvingAgainstBaseURL: false) else {
+            throw URLError(.badURL)
+        }
         components.queryItems = [URLQueryItem(name: "q", value: query)]
         
         guard let url = components.url else {
@@ -67,7 +69,9 @@ class JikanService {
         // Jikan doesn't have a direct recommendations endpoint for anonymous users
         // So we fetch top anime as recommendations
         let url = baseURL.appendingPathComponent("top/anime")
-        var components = URLComponents(url: url, resolvingAgainstBaseURL: false)!
+        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            throw URLError(.badURL)
+        }
         components.queryItems = [
             URLQueryItem(name: "order_by", value: "popularity"),
             URLQueryItem(name: "limit", value: "25")
@@ -80,7 +84,9 @@ class JikanService {
     
     /// Fetches anime by specific filter.
     func fetchAnimeByFilter(status: String? = nil, type: String? = nil, orderBy: String = "score", limit: Int = 25) async throws -> [Anime] {
-        var components = URLComponents(url: baseURL.appendingPathComponent("anime"), resolvingAgainstBaseURL: false)!
+        guard var components = URLComponents(url: baseURL.appendingPathComponent("anime"), resolvingAgainstBaseURL: false) else {
+            throw URLError(.badURL)
+        }
         var queryItems = [URLQueryItem]()
         
         if let status = status {

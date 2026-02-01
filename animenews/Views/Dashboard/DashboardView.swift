@@ -207,36 +207,51 @@ struct DashboardView: View {
                     .fontWeight(.bold)
                 
                 VStack(spacing: 12) {
-                    LibraryStatRow(
-                        label: "Currently Watching",
-                        value: viewModel.watchingCount,
-                        color: .blue,
-                        icon: "play.fill"
-                    )
+                    NavigationLink(destination: MyAnimeListView()) {
+                        LibraryStatRow(
+                            label: "Currently Watching",
+                            value: viewModel.watchingCount,
+                            color: .blue,
+                            icon: "play.fill"
+                        )
+                    }
+                    .buttonStyle(.plain)
                     
-                    LibraryStatRow(
-                        label: "Completed",
-                        value: viewModel.completedCount,
-                        color: .green,
-                        icon: "checkmark"
-                    )
+                    NavigationLink(destination: MyAnimeListView()) {
+                        LibraryStatRow(
+                            label: "Completed",
+                            value: viewModel.completedCount,
+                            color: .green,
+                            icon: "checkmark"
+                        )
+                    }
+                    .buttonStyle(.plain)
                     
-                    LibraryStatRow(
-                        label: "Plan to Watch",
-                        value: viewModel.planToWatchCount,
-                        color: .purple,
-                        icon: "bookmark"
-                    )
+                    NavigationLink(destination: MyAnimeListView()) {
+                        LibraryStatRow(
+                            label: "Plan to Watch",
+                            value: viewModel.planToWatchCount,
+                            color: .purple,
+                            icon: "bookmark"
+                        )
+                    }
+                    .buttonStyle(.plain)
                     
                     Divider()
                     
-                    HStack {
-                        Text("Total in Library")
-                            .fontWeight(.medium)
-                        Spacer()
-                        Text("\(viewModel.watchingCount + viewModel.completedCount + viewModel.planToWatchCount)")
-                            .fontWeight(.bold)
+                    NavigationLink(destination: MyAnimeListView()) {
+                        HStack {
+                            Text("Total in Library")
+                                .fontWeight(.medium)
+                            Spacer()
+                            Text("\(viewModel.watchingCount + viewModel.completedCount + viewModel.planToWatchCount)")
+                                .fontWeight(.bold)
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
+                    .buttonStyle(.plain)
                 }
             }
         }
@@ -271,27 +286,31 @@ struct DashboardView: View {
                     .fontWeight(.bold)
 
                 ForEach(Array(viewModel.trendingAnime.enumerated()), id: \.element.id) { index, anime in
-                    HStack {
-                        Text("#\(index + 1)")
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .foregroundColor(.secondary)
-                            .frame(width: 24)
-                        
-                        Text(anime.title)
-                            .font(.subheadline)
-                            .lineLimit(1)
-                        
-                        Spacer()
-                        
-                        HStack(spacing: 4) {
-                            Image(systemName: "star.fill")
-                                .foregroundColor(.yellow)
-                            Text(String(format: "%.1f", anime.score ?? 0.0))
+                    NavigationLink(destination: AnimeDetailView(anime: anime).id(anime.id)) {
+                        HStack {
+                            Text("#\(index + 1)")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundColor(.secondary)
+                                .frame(width: 24)
+                            
+                            Text(anime.title)
+                                .font(.subheadline)
+                                .lineLimit(1)
+                                .foregroundColor(.primary)
+                            
+                            Spacer()
+                            
+                            HStack(spacing: 4) {
+                                Image(systemName: "star.fill")
+                                    .foregroundColor(.yellow)
+                                Text(String(format: "%.1f", anime.score ?? 0.0))
+                            }
+                            .font(.caption.weight(.medium))
                         }
-                        .font(.caption.weight(.medium))
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
+                    .buttonStyle(.plain)
                     
                     if index < viewModel.trendingAnime.count - 1 {
                         Divider()
@@ -316,13 +335,15 @@ struct DashboardView: View {
                     .foregroundColor(.secondary)
             }
             
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
-                    ForEach(viewModel.seasonalAnime) { anime in
+            LazyVGrid(columns: [
+                GridItem(.adaptive(minimum: 130, maximum: 150), spacing: 16)
+            ], spacing: 16) {
+                ForEach(viewModel.seasonalAnime) { anime in
+                    NavigationLink(destination: AnimeDetailView(anime: anime).id(anime.id)) {
                         SeasonalAnimeCard(anime: anime)
                     }
+                    .buttonStyle(.plain)
                 }
-                .padding(.horizontal, 4)
             }
         }
     }

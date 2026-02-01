@@ -1,7 +1,9 @@
 import Foundation
 
 struct NewsItem: Identifiable, Hashable {
-    let id = UUID()
+    // Use link as stable identity since each news item should have a unique URL
+    var id: String { link }
+    
     let title: String
     let link: String
     let pubDate: Date

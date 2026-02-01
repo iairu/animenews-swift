@@ -2,13 +2,8 @@ import SwiftUI
 
 struct AnimeDetailView: View {
     let anime: Anime
-    @StateObject private var viewModel: AnimeDetailViewModel
+    @StateObject private var viewModel = AnimeDetailViewModel()
     @State private var showInspector = false
-
-    init(anime: Anime) {
-        self.anime = anime
-        _viewModel = StateObject(wrappedValue: AnimeDetailViewModel(anime: anime))
-    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -23,6 +18,12 @@ struct AnimeDetailView: View {
         }
         .navigationTitle(anime.title)
         .toolbar { toolbarContent }
+        .onAppear {
+            viewModel.setAnime(anime)
+        }
+        .onChange(of: anime.id) { newId in
+            viewModel.setAnime(anime)
+        }
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showInspector) {
@@ -84,8 +85,10 @@ struct AnimeDetailView: View {
             
             // Share button - use available API
             if #available(macOS 13.0, iOS 16.0, *) {
-                ShareLink(item: URL(string: anime.url)!) {
-                    Image(systemName: "square.and.arrow.up")
+                if let shareURL = URL(string: anime.url) {
+                    ShareLink(item: shareURL) {
+                        Image(systemName: "square.and.arrow.up")
+                    }
                 }
             } else {
                 Button(action: copyLinkToClipboard) {
@@ -105,58 +108,53 @@ struct AnimeDetailView: View {
             }
             #endif
             
-            Link(destination: URL(string: anime.url)!) {
-                Image(systemName: "safari")
+            if let safariURL = URL(string: anime.url) {
+                Link(destination: safariURL) {
+                    Image(systemName: "safari")
+                }
+                .help("Open on MyAnimeList")
             }
-            .help("Open on MyAnimeList")
         }
     }
 
     private var header: some View {
-        HStack(alignment: .top, spacing: 16) {
-            CachedAsyncImage(url: URL(string: anime.images.jpg.largeImageUrl))
-                .frame(width: 125, height: 190)
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(8)
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text(anime.title)
-                    .font(.title2.weight(.bold))
+        VStack(alignment: .leading, spacing: 8) {
+            Text(anime.title)
+                .font(.title2.weight(.bold))
                 
-                HStack(spacing: 8) {
-                    if let type = anime.type {
-                        Badge(text: type, color: .blue)
-                    }
-                    if let year = anime.year {
-                        Badge(text: "\(year)", color: .secondary)
-                    }
-                    if let episodes = anime.episodes {
-                        Badge(text: "\(episodes) eps", color: .secondary)
-                    }
+            HStack(spacing: 8) {
+                if let type = anime.type {
+                    Badge(text: type, color: .blue)
                 }
-                
-                Text(anime.status ?? "Unknown Status")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                
-                if let score = anime.score, score > 0 {
-                    HStack(spacing: 4) {
-                        Image(systemName: "star.fill")
-                            .foregroundColor(.yellow)
-                        Text(String(format: "%.2f", score))
-                            .font(.headline.weight(.semibold))
-                        
-                        if let rank = anime.rank {
-                            Text("• #\(rank)")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding(.top, 4)
+                if let year = anime.year {
+                    Badge(text: "\(year)", color: .secondary)
                 }
-
-                genres
+                if let episodes = anime.episodes {
+                    Badge(text: "\(episodes) eps", color: .secondary)
+                }
             }
+                
+            Text(anime.status ?? "Unknown Status")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                
+            if let score = anime.score, score > 0 {
+                HStack(spacing: 4) {
+                    Image(systemName: "star.fill")
+                        .foregroundColor(.yellow)
+                    Text(String(format: "%.2f", score))
+                        .font(.headline.weight(.semibold))
+                        
+                    if let rank = anime.rank {
+                        Text("• #\(rank)")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.top, 4)
+            }
+
+            genres
         }
     }
     
@@ -469,5 +467,88 @@ struct AnimeDetailView_Previews: PreviewProvider {
             AnimeDetailView(anime: Anime.placeholder)
         }
         .preferredColorScheme(.dark)
+    }
+}
+
+// MARK: - Simple Detail Image Loader
+// A simple image loader that avoids the crash-prone async patterns
+
+struct SimpleDetailImage: View {
+    let urlString: String
+    
+    #if os(macOS)
+    @State private var nsImage: NSImage?
+    #else
+    @State private var uiImage: UIImage?
+    #endif
+    
+    @State private var isLoading = true
+    
+    var body: some View {
+        ZStack {
+            Rectangle()
+                .fill(Color.gray.opacity(0.3))
+            
+            #if os(macOS)
+            if let nsImage = nsImage {
+                Image(nsImage: nsImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else if isLoading {
+                ProgressView()
+                    .scaleEffect(0.7)
+            } else {
+                Image(systemName: "photo")
+                    .foregroundColor(.secondary)
+            }
+            #else
+            if let uiImage = uiImage {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else if isLoading {
+                ProgressView()
+                    .scaleEffect(0.7)
+            } else {
+                Image(systemName: "photo")
+                    .foregroundColor(.secondary)
+            }
+            #endif
+        }
+        .clipped()
+        .onAppear {
+            loadImage()
+        }
+    }
+    
+    private func loadImage() {
+        guard let url = URL(string: urlString) else {
+            isLoading = false
+            return
+        }
+        
+        // Load on background queue, update on main
+        DispatchQueue.global(qos: .userInitiated).async {
+            guard let data = try? Data(contentsOf: url) else {
+                DispatchQueue.main.async {
+                    isLoading = false
+                }
+                return
+            }
+            
+            #if os(macOS)
+            let loadedImage = NSImage(data: data)
+            DispatchQueue.main.async {
+                nsImage = loadedImage
+                isLoading = false
+            }
+            #else
+            let loadedImage = UIImage(data: data)
+            DispatchQueue.main.async {
+                uiImage = loadedImage
+                isLoading = false
+            }
+            #endif
+        }
     }
 }

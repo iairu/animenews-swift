@@ -1,7 +1,7 @@
 import Foundation
 
 /// A service that fetches and parses RSS feeds from multiple anime news sources.
-class RSSParser: NSObject, XMLParserDelegate {
+class RSSParser {
     
     // RSS Feed URLs
     private let feedURLs: [String: String] = [
@@ -10,32 +10,6 @@ class RSSParser: NSObject, XMLParserDelegate {
         "MyAnimeList": "https://myanimelist.net/rss/news.xml"
     ]
     
-    // XML Parsing state
-    private var currentElement = ""
-    private var currentTitle = ""
-    private var currentLink = ""
-    private var currentDescription = ""
-    private var currentPubDate = ""
-    private var currentSource = ""
-    private var parsedItems: [NewsItem] = []
-    private var isInsideItem = false
-    
-    // Date formatters for RSS date parsing
-    private static let dateFormatters: [DateFormatter] = {
-        let formats = [
-            "EEE, dd MMM yyyy HH:mm:ss Z",      // RFC 822
-            "EEE, dd MMM yyyy HH:mm:ss zzz",    // With timezone name
-            "yyyy-MM-dd'T'HH:mm:ssZ",           // ISO 8601
-            "yyyy-MM-dd'T'HH:mm:ss.SSSZ"        // ISO 8601 with milliseconds
-        ]
-        return formats.map { format in
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.dateFormat = format
-            return formatter
-        }
-    }()
-    
     /// Fetches news from all configured RSS feeds.
     func fetchNews() async throws -> [NewsItem] {
         var allItems: [NewsItem] = []
@@ -43,8 +17,7 @@ class RSSParser: NSObject, XMLParserDelegate {
         // Fetch from all feeds concurrently
         await withTaskGroup(of: [NewsItem].self) { group in
             for (source, urlString) in feedURLs {
-                group.addTask { [weak self] in
-                    guard let self = self else { return [] }
+                group.addTask {
                     do {
                         return try await self.fetchFeed(from: urlString, source: source)
                     } catch {
@@ -85,29 +58,50 @@ class RSSParser: NSObject, XMLParserDelegate {
             throw URLError(.badServerResponse)
         }
         
-        return parseRSS(data: data, source: source)
-    }
-    
-    /// Parses RSS XML data into NewsItem array.
-    private func parseRSS(data: Data, source: String) -> [NewsItem] {
-        // Reset state for new parse
-        parsedItems = []
-        currentSource = source
-        currentElement = ""
-        currentTitle = ""
-        currentLink = ""
-        currentDescription = ""
-        currentPubDate = ""
-        isInsideItem = false
-        
+        // Use a separate delegate instance for each parse to avoid shared state issues
+        let parserDelegate = RSSParserDelegate(source: source)
         let parser = XMLParser(data: data)
-        parser.delegate = self
+        parser.delegate = parserDelegate
         parser.parse()
         
-        return parsedItems
+        return parserDelegate.parsedItems
     }
+}
+
+// MARK: - Isolated Parser Delegate
+// Each feed gets its own delegate instance to avoid shared state issues
+
+private class RSSParserDelegate: NSObject, XMLParserDelegate {
+    let source: String
+    var parsedItems: [NewsItem] = []
     
-    // MARK: - XMLParserDelegate
+    private var currentElement = ""
+    private var currentTitle = ""
+    private var currentLink = ""
+    private var currentDescription = ""
+    private var currentPubDate = ""
+    private var isInsideItem = false
+    
+    // Date formatters for RSS date parsing
+    private static let dateFormatters: [DateFormatter] = {
+        let formats = [
+            "EEE, dd MMM yyyy HH:mm:ss Z",      // RFC 822
+            "EEE, dd MMM yyyy HH:mm:ss zzz",    // With timezone name
+            "yyyy-MM-dd'T'HH:mm:ssZ",           // ISO 8601
+            "yyyy-MM-dd'T'HH:mm:ss.SSSZ"        // ISO 8601 with milliseconds
+        ]
+        return formats.map { format in
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.dateFormat = format
+            return formatter
+        }
+    }()
+    
+    init(source: String) {
+        self.source = source
+        super.init()
+    }
     
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
         currentElement = elementName
@@ -163,7 +157,7 @@ class RSSParser: NSObject, XMLParserDelegate {
                     title: currentTitle.trimmingCharacters(in: .whitespacesAndNewlines),
                     link: currentLink.trimmingCharacters(in: .whitespacesAndNewlines),
                     pubDate: pubDate,
-                    source: currentSource,
+                    source: source,
                     description: cleanDescription
                 )
                 parsedItems.append(item)
@@ -174,7 +168,6 @@ class RSSParser: NSObject, XMLParserDelegate {
     // MARK: - Helpers
     
     /// Attempts to parse a date string using multiple formats.
-    /// Handles malformed input where URL or other text may be prepended.
     private static func parseDate(from string: String) -> Date? {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         
@@ -186,7 +179,6 @@ class RSSParser: NSObject, XMLParserDelegate {
         }
         
         // Fallback: Extract RFC 822 date pattern from potentially malformed string
-        // Pattern matches: "Mon, 01 Jan 2026 12:00:00 -0800" or similar
         let rfc822Pattern = #"[A-Za-z]{3},?\s+\d{1,2}\s+[A-Za-z]{3}\s+\d{4}\s+\d{2}:\d{2}:\d{2}\s+[+-]?\d{4}"#
         if let range = trimmed.range(of: rfc822Pattern, options: .regularExpression) {
             let extractedDate = String(trimmed[range])
@@ -219,3 +211,4 @@ class RSSParser: NSObject, XMLParserDelegate {
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
+

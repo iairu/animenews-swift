@@ -2,7 +2,7 @@ import SwiftUI
 
 @MainActor
 class AnimeDetailViewModel: ObservableObject {
-    private let anime: Anime
+    private var anime: Anime?
     @Published var trackedAnime: TrackedAnime?
     
     @Published var status: TrackedAnime.Status = .planToWatch
@@ -12,14 +12,23 @@ class AnimeDetailViewModel: ObservableObject {
     var isTracked: Bool {
         trackedAnime != nil
     }
+    
+    var currentAnimeId: Int? {
+        anime?.malId
+    }
 
-    init(anime: Anime) {
+    init() {}
+    
+    func setAnime(_ anime: Anime) {
+        // Only update if it's a different anime
+        guard self.anime?.malId != anime.malId else { return }
         self.anime = anime
         self.fetchTrackedStatus()
     }
     
     func fetchTrackedStatus() {
-        self.trackedAnime = StorageService.shared.getTrackedAnime(id: anime.id)
+        guard let anime = anime else { return }
+        self.trackedAnime = StorageService.shared.getTrackedAnime(id: anime.malId)
         
         if let tracked = trackedAnime {
             self.status = tracked.status
@@ -29,14 +38,16 @@ class AnimeDetailViewModel: ObservableObject {
     }
     
     func toggleTracking() {
+        guard let anime = anime else { return }
+        
         if isTracked {
             // Remove from tracking
-            StorageService.shared.delete(id: anime.id)
+            StorageService.shared.delete(id: anime.malId)
             self.trackedAnime = nil
         } else {
             // Add to tracking
             let newTrackedAnime = TrackedAnime(
-                id: anime.id,
+                id: anime.malId,
                 status: .planToWatch,
                 watchedEpisodes: 0,
                 score: nil,

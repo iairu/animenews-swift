@@ -100,8 +100,10 @@ struct NewsRow: View {
                 Label("Copy Link", systemImage: "doc.on.doc")
             }
             
-            Link(destination: URL(string: item.link)!) {
-                Label("Open in Browser", systemImage: "safari")
+            if let url = URL(string: item.link) {
+                Link(destination: url) {
+                    Label("Open in Browser", systemImage: "safari")
+                }
             }
         }
     }

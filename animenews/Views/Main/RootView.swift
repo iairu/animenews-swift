@@ -189,7 +189,6 @@ struct MainNavigationView: View {
     private var animeDetailView: some View {
         if let anime = selectedAnime {
             AnimeDetailView(anime: anime)
-                .id(anime.id) // Force view recreation when anime changes
         } else {
             DetailPlaceholderView(message: "Select an anime to view details")
         }
@@ -380,18 +379,38 @@ struct ScheduleContentView: View {
     }
     
     private var dayPicker: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+        HStack {
+            Menu {
                 ForEach(DayOfWeek.allCases, id: \.self) { day in
-                    DayButton(day: day, isSelected: selectedDay == day) {
+                    Button(action: {
                         selectedDay = day
                         Task { await viewModel.fetchSchedule(for: day) }
+                    }) {
+                        HStack {
+                            Text(day.rawValue)
+                            if selectedDay == day {
+                                Image(systemName: "checkmark")
+                            }
+                        }
                     }
                 }
+            } label: {
+                HStack {
+                    Image(systemName: "calendar")
+                    Text(selectedDay.rawValue)
+                    Image(systemName: "chevron.down")
+                        .font(.caption)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color.accentColor.opacity(0.15))
+                .cornerRadius(8)
             }
-            .padding(.horizontal)
-            .padding(.vertical, 8)
+            
+            Spacer()
         }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
     }
     
     private var emptyState: some View {
@@ -451,13 +470,28 @@ struct MyAnimeContentView: View {
     
     private var filterBar: some View {
         VStack(spacing: 8) {
-            Picker("Status", selection: $viewModel.statusFilter) {
-                Text("All").tag(nil as TrackedAnime.Status?)
-                ForEach(TrackedAnime.Status.allCases, id: \.self) { status in
-                    Text(status.rawValue).tag(Optional(status))
+            HStack {
+                Menu {
+                    Button("All") { viewModel.statusFilter = nil }
+                    Divider()
+                    ForEach(TrackedAnime.Status.allCases, id: \.self) { status in
+                        Button(status.rawValue) { viewModel.statusFilter = status }
+                    }
+                } label: {
+                    HStack {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                        Text(viewModel.statusFilter?.rawValue ?? "All Statuses")
+                        Image(systemName: "chevron.down")
+                            .font(.caption)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.accentColor.opacity(0.15))
+                    .cornerRadius(8)
                 }
+                
+                Spacer()
             }
-            .pickerStyle(.segmented)
             
             HStack {
                 Picker("Sort", selection: $sortOption) {
