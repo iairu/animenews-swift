@@ -12,61 +12,41 @@ struct RootView: View {
 
 /// The main TabView for iOS devices.
 struct MainTabView: View {
-    @State private var selectedSection: SidebarSection = .dashboard
+    @StateObject private var tabManager = TabManager()
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                // Dropdown menu at top
-                sectionPicker
-                
-                Divider()
-                
-                // Content
-                contentForSection(selectedSection)
-            }
-            .navigationTitle(selectedSection.title)
-        }
-    }
-    
-    private var sectionPicker: some View {
-        Menu {
-            ForEach(SidebarSection.allCases, id: \.self) { section in
-                Button(action: { selectedSection = section }) {
+        TabView {
+            // Render the first 4 "visible" tabs
+            ForEach(tabManager.visibleTabs) { section in
+                NavigationStack {
+                    contentForSection(section)
+                }
+                .tabItem {
                     Label(section.title, systemImage: section.icon)
                 }
+                .tag(section)
             }
-        } label: {
-            HStack {
-                Image(systemName: selectedSection.icon)
-                Text(selectedSection.title)
-                    .fontWeight(.semibold)
-                Image(systemName: "chevron.down")
-                    .font(.caption)
+            
+            // Fixed "More" tab for the rest
+            NavigationStack {
+                MoreView(tabManager: tabManager)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(Color.accentColor.opacity(0.1))
-            .cornerRadius(10)
+            .tabItem {
+                Label("More", systemImage: "ellipsis")
+            }
+            .tag(SidebarSection.allCases.first { !tabManager.visibleTabs.contains($0) } ?? .settings) // Unique tag to avoid conflicts, though not strictly needed for this logic
         }
-        .padding()
     }
     
     @ViewBuilder
     private func contentForSection(_ section: SidebarSection) -> some View {
         switch section {
-        case .dashboard:
-            DashboardView()
-        case .news:
-            NewsListView()
-        case .database:
-            AnimeListView()
-        case .schedule:
-            ScheduleView()
-        case .myAnime:
-            MyAnimeListView()
-        case .settings:
-            SettingsView()
+        case .dashboard: DashboardView()
+        case .news: NewsListView()
+        case .database: AnimeListView()
+        case .schedule: ScheduleView()
+        case .myAnime: MyAnimeListView()
+        case .settings: SettingsView()
         }
     }
 }
@@ -205,35 +185,7 @@ struct MainNavigationView: View {
 
 // MARK: - Sidebar Section Enum
 
-enum SidebarSection: String, Hashable, CaseIterable {
-    case dashboard = "Dashboard"
-    case news = "News"
-    case database = "Database"
-    case schedule = "Schedule"
-    case myAnime = "My Anime"
-    case settings = "Settings"
-    
-    var title: String { rawValue }
-    
-    var icon: String {
-        switch self {
-        case .dashboard: return "chart.bar.xaxis"
-        case .news: return "newspaper.fill"
-        case .database: return "books.vertical.fill"
-        case .schedule: return "calendar"
-        case .myAnime: return "heart.fill"
-        case .settings: return "gear"
-        }
-    }
-    
-    static var mainSections: [SidebarSection] {
-        [.dashboard, .news, .database, .schedule]
-    }
-    
-    static var librarySections: [SidebarSection] {
-        [.myAnime]
-    }
-}
+
 
 // MARK: - Content Views (Column 2)
 

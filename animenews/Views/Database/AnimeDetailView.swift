@@ -71,7 +71,11 @@ struct AnimeDetailView: View {
             }
             .padding()
         }
+        #if os(macOS)
         .frame(minWidth: 400, maxWidth: .infinity)
+        #else
+        .frame(maxWidth: .infinity)
+        #endif
     }
     
     @ToolbarContentBuilder

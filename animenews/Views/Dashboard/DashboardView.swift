@@ -3,10 +3,16 @@ import SwiftUI
 struct DashboardView: View {
     @StateObject private var viewModel = DashboardViewModel()
     
-    private let columns: [GridItem] = [
-        GridItem(.flexible()),
-        GridItem(.flexible())
-    ]
+    private let columns: [GridItem] = {
+        #if os(iOS)
+        return [GridItem(.flexible())]
+        #else
+        return [
+            GridItem(.flexible()),
+            GridItem(.flexible())
+        ]
+        #endif
+    }()
 
     var body: some View {
         ScrollView {
@@ -59,6 +65,7 @@ struct DashboardView: View {
                     Image(systemName: "sidebar.left")
                 }
             }
+            #endif
             
             ToolbarItem(placement: .primaryAction) {
                 Button(action: {
@@ -67,7 +74,6 @@ struct DashboardView: View {
                     Image(systemName: "arrow.clockwise")
                 }
             }
-            #endif
         }
         .task {
             await viewModel.fetchDashboardData()
@@ -118,35 +124,46 @@ struct DashboardView: View {
     
     // MARK: - Quick Stats
     private var quickStatsSection: some View {
-        HStack(spacing: 16) {
-            QuickStatCard(
-                title: "Episodes Watched",
-                value: "\(viewModel.totalEpisodesWatched)",
-                icon: "play.circle.fill",
-                color: .blue
-            )
-            
-            QuickStatCard(
-                title: "Avg. Score",
-                value: viewModel.averageScore > 0 ? String(format: "%.1f", viewModel.averageScore) : "N/A",
-                icon: "star.fill",
-                color: .yellow
-            )
-            
-            QuickStatCard(
-                title: "Completed",
-                value: "\(viewModel.completedCount)",
-                icon: "checkmark.circle.fill",
-                color: .green
-            )
-            
-            QuickStatCard(
-                title: "Plan to Watch",
-                value: "\(viewModel.planToWatchCount)",
-                icon: "bookmark.fill",
-                color: .purple
-            )
+        #if os(iOS)
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+            statsCards
         }
+        #else
+        HStack(spacing: 16) {
+            statsCards
+        }
+        #endif
+    }
+    
+    @ViewBuilder
+    private var statsCards: some View {
+        QuickStatCard(
+            title: "Episodes Watched",
+            value: "\(viewModel.totalEpisodesWatched)",
+            icon: "play.circle.fill",
+            color: .blue
+        )
+        
+        QuickStatCard(
+            title: "Avg. Score",
+            value: viewModel.averageScore > 0 ? String(format: "%.1f", viewModel.averageScore) : "N/A",
+            icon: "star.fill",
+            color: .yellow
+        )
+        
+        QuickStatCard(
+            title: "Completed",
+            value: "\(viewModel.completedCount)",
+            icon: "checkmark.circle.fill",
+            color: .green
+        )
+        
+        QuickStatCard(
+            title: "Plan to Watch",
+            value: "\(viewModel.planToWatchCount)",
+            icon: "bookmark.fill",
+            color: .purple
+        )
     }
     
     // MARK: - Activity Rings Card
